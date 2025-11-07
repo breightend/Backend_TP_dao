@@ -26,7 +26,7 @@ class RegistroAlquilerAuto:
     self.sanciones = []
   
   def finalizarAlquiler(self):
-    pass
+    self.fechaInicio = datetime.now().strftime("%Y/%m/%d")
   
   def calcularCostoTotal(self):
     pass
