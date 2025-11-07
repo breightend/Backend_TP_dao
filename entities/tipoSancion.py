@@ -1,13 +1,6 @@
-from typing import List
-
 class TipoSancion:
+    nombre: str
+    costoBase: float
 
-  nombre: str
-  costoBase: float
-  
-  def __init__(self, nombre: str):
-    self.nombre = nombre
-    
-  
-  
-    
+    def __init__(self, nombre: str):
+        self.nombre = nombre
