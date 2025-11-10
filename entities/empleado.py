@@ -1,11 +1,28 @@
+from sqlalchemy import Column, Float, Integer, String
+from db.connection import DatabaseEngineSingleton
+from sqlalchemy.orm import sessionmaker
 from entities.persona import Persona
 
 
 class Empleado(Persona):
+
+    __tablename__ = "Empleados"
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'empleado',
+    }
+
+    legajo = Column("legajo", Integer, primary_key=True)
+    puesto = Column("puesto", String(200), nullable=False)
+    salario = Column("salario", Float, nullable=False)
+    fechaInicioActividad = Column("fecha_inicio_actividad", String(100), nullable=False)
+    dni = Column("dni", Integer)
+
     def __init__(
         self,
         nombre: str,
         apellido: str,
+        direccion: str,
         fechaNacimiento: str,
         dni: str,
         telefono: str,
@@ -15,7 +32,7 @@ class Empleado(Persona):
         salario: float,
         fechaInicioActividad: str,
     ):
-        super().__init__(nombre, apellido, fechaNacimiento, dni, telefono, email)
+        super().__init__(nombre, apellido, direccion, fechaNacimiento, dni, telefono, email)
         self.legajo = legajo
         self.puesto = puesto
         self.salario = salario
@@ -27,3 +44,18 @@ class Empleado(Persona):
             f"Puesto: {self.puesto}"
             f"Fecha de Inicio de Actividad: {self.fechaInicioActividad}"
         )
+    
+    def persist(self):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        session.add(self)
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error occurred while persisting Cliente: {e}")
+        finally:
+            session.close()
