@@ -1,12 +1,14 @@
-from entities.persona import Persona
 from sqlalchemy.orm import sessionmaker
-from db.connection import DatabaseEngineSingleton
-class Cliente(Persona):
 
+from db.connection import DatabaseEngineSingleton
+from entities.persona import Persona
+
+
+class Cliente(Persona):
     __tablename__ = "Clientes"
 
     __mapper_args__ = {
-        'polymorphic_identity': 'cliente',
+        "polymorphic_identity": "cliente",
     }
 
     def __init__(
@@ -19,8 +21,9 @@ class Cliente(Persona):
         telefono: str,
         email: str,
     ):
-        super().__init__(nombre, apellido, direccion, fechaNacimiento, dni, telefono, email)
-    
+        super().__init__(
+            nombre, apellido, direccion, fechaNacimiento, dni, telefono, email
+        )
 
     def mostrar_informacion(self):
         return super().mostrar_informacion()
@@ -40,4 +43,30 @@ class Cliente(Persona):
         finally:
             session.close()
 
+    @classmethod
+    def get_all_clients(cls):
+        engine = DatabaseEngineSingleton().engine
 
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            clients = session.query(Cliente).all()
+            clients_data = [client.to_dict() for client in clients]
+            return clients_data
+        except Exception as e:
+            print(f"Error occurred while retrieving clients: {e}")
+            return []
+        finally:
+            session.close()
+
+    def to_dict(self):
+        return {
+            "dni": self.dni,
+            "nombre": self.nombre,
+            "apellido": self.apellido,
+            "direccion": self.direccion,
+            "email": self.email,
+            "telefono": self.telefono,
+            "fechaNacimiento": self.fechaNacimiento,
+        }

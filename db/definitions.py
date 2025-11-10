@@ -25,7 +25,7 @@ estados = Table(
 clientes = Table(
     "Clientes",
     meta,
-    Column("dni", Integer, primary_key=True),
+    Column("dni", Integer, primary_key=True, autoincrement=False),
     Column("direccion", String(200), nullable=False),
     Column("nombre", String(100), nullable=False),
     Column("apellido", String(100), nullable=False),
