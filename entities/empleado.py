@@ -1,15 +1,15 @@
 from sqlalchemy import Column, Float, Integer, String
-from db.connection import DatabaseEngineSingleton
 from sqlalchemy.orm import sessionmaker
+
+from db.connection import DatabaseEngineSingleton
 from entities.persona import Persona
 
 
 class Empleado(Persona):
-
     __tablename__ = "Empleados"
 
     __mapper_args__ = {
-        'polymorphic_identity': 'empleado',
+        "polymorphic_identity": "empleado",
     }
 
     legajo = Column("legajo", Integer, primary_key=True)
@@ -32,7 +32,9 @@ class Empleado(Persona):
         salario: float,
         fechaInicioActividad: str,
     ):
-        super().__init__(nombre, apellido, direccion, fechaNacimiento, dni, telefono, email)
+        super().__init__(
+            nombre, apellido, direccion, fechaNacimiento, dni, telefono, email
+        )
         self.legajo = legajo
         self.puesto = puesto
         self.salario = salario
@@ -44,7 +46,7 @@ class Empleado(Persona):
             f"Puesto: {self.puesto}"
             f"Fecha de Inicio de Actividad: {self.fechaInicioActividad}"
         )
-    
+
     def persist(self):
         engine = DatabaseEngineSingleton().engine
 
@@ -59,3 +61,37 @@ class Empleado(Persona):
             print(f"Error occurred while persisting Cliente: {e}")
         finally:
             session.close()
+
+    @staticmethod
+    def get_all_employees():
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            empleados = session.query(Empleado).all()
+
+            empleados_data = [empleado.to_dict() for empleado in empleados]
+
+            return empleados_data
+        except Exception as e:
+            print(f"Error occurred while fetching Empleados: {e}")
+            return []
+        finally:
+            session.close()
+
+    def to_dict(self) -> dict:
+        return {
+            "legajo": self.legajo,
+            "nombre": self.nombre,
+            "apellido": self.apellido,
+            "direccion": self.direccion,
+            "fechaNacimiento": self.fechaNacimiento,
+            "DNI": self.dni,
+            "telefono": self.telefono,
+            "email": self.email,
+            "puesto": self.puesto,
+            "salario": self.salario,
+            "fechaInicioActividad": self.fechaInicioActividad,
+        }
