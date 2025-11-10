@@ -1,7 +1,6 @@
-from connection import engine
+from connection import DatabaseEngineSingleton
 from sqlalchemy import (
     Column,
-    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -11,6 +10,8 @@ from sqlalchemy import (
 )
 
 meta = MetaData()
+
+engine = DatabaseEngineSingleton().engine
 
 
 estados = Table(
@@ -25,13 +26,12 @@ clientes = Table(
     "Clientes",
     meta,
     Column("dni", Integer, primary_key=True),
-    Column("tipo_documento", String(100), primary_key=True),
     Column("direccion", String(200), nullable=False),
     Column("nombre", String(100), nullable=False),
     Column("apellido", String(100), nullable=False),
     Column("email", String(100), nullable=False),
     Column("telefono", String(20), nullable=False),
-    Column("fecha_nacimiento", DateTime, nullable=False),
+    Column("fecha_nacimiento", String(10), nullable=False),
 )
 
 empleados = Table(
@@ -39,14 +39,14 @@ empleados = Table(
     meta,
     Column("legajo", Integer, primary_key=True),
     Column("dni", Integer, nullable=False),
-    Column("tipo_documento", String(100), nullable=False),
     Column("nombre", String(100), nullable=False),
     Column("apellido", String(100), nullable=False),
+    Column("direccion", String(200), nullable=False),
     Column("email", String(100), nullable=False),
     Column("telefono", String(20), nullable=False),
-    Column("fecha_nacimiento", DateTime, nullable=False),
+    Column("fecha_nacimiento", String(10), nullable=False),
     Column("puesto", String(100), nullable=False),
-    Column("fecha_inicio_actividad", DateTime, nullable=False),
+    Column("fecha_inicio_actividad", String(10), nullable=False),
     Column("salario", Float, nullable=False),
 )
 
@@ -65,8 +65,8 @@ alquileres = Table(
     Column("dni_cliente", Integer, ForeignKey("Clientes.dni")),
     Column("legajo_empleado", Integer, ForeignKey("Empleados.legajo")),
     Column("precio", Float, nullable=False),
-    Column("fecha_inicio", DateTime, nullable=False),
-    Column("fecha_fin", DateTime, nullable=False),
+    Column("fecha_inicio", String(10), nullable=False),
+    Column("fecha_fin", String(10), nullable=False),
 )
 
 sanciones = Table(
@@ -97,8 +97,8 @@ ordenes_mantenimiento = Table(
     meta,
     Column("id_orden", Integer, primary_key=True),
     Column("patente_vehiculo", String(10), ForeignKey("Automoviles.patente")),
-    Column("fecha_inicio", DateTime, nullable=False),
-    Column("fecha_fin", DateTime, nullable=False),
+    Column("fecha_inicio", String(10), nullable=False),
+    Column("fecha_fin", String(10), nullable=False),
 )
 
 automoviles = Table(
