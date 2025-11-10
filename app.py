@@ -1,10 +1,12 @@
 from flask import Flask
+from flask_cors import CORS
 from endpoints.routes.empleado_bp import empleado_bp
 from endpoints.routes.client_bp import client_bp
 
 def main():
 
   app = Flask(__name__)
+  CORS(app)
   
   app.register_blueprint(client_bp)
   app.register_blueprint(empleado_bp)
