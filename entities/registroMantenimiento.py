@@ -30,11 +30,11 @@ class RegistroMantenimiento(Mantenimiento):
         return total
 
     def agregarMantenimineto(self, mantenimineto: Mantenimiento):
-        if datetime.strptime(mantenimineto.getFecha(), "%Y/%m/%d") >= datetime.strptime(
-            self.fechaInicio, "%Y/%m/%d"
+        if datetime.strptime(mantenimineto.getFecha(), "%Y-%m-%d") >= datetime.strptime(
+            self.fechaInicio, "%Y-%m-%d"
         ) and datetime.strptime(
-            mantenimineto.getFecha(), "%Y/%m/%d"
-        ) <= datetime.strptime(self.fechaFin, "%Y/%m/%d"):
+            mantenimineto.getFecha(), "%Y-%m-%d"
+        ) <= datetime.strptime(self.fechaFin, "%Y-%m-%d"):
             self.mantenimientos.append(mantenimineto)
         else:
             raise ValueError("La fecha del mantenimiento está fuera del rango del registro.")
