@@ -13,11 +13,7 @@ class Persona(Base, ABC, metaclass=CombinedMeta):
 
     __abstract__ = True
 
-    __mapper_args__ = {
-        'concrete': True 
-    }
-
-    dni = Column("dni", Integer, primary_key=True)
+    dni = Column("dni", Integer, primary_key=True, autoincrement=False)
     direccion = Column("direccion", String(200), nullable=False)
     nombre = Column("nombre", String(100), nullable=False)
     apellido = Column("apellido", String(100), nullable=False)
@@ -31,8 +27,8 @@ class Persona(Base, ABC, metaclass=CombinedMeta):
         apellido: str,
         direccion: str,
         fechaNacimiento: str,
-        dni: str,
-        telefono: str,
+        dni: int,
+        telefono: int,
         email: str,
     ):
         self.nombre = nombre
