@@ -14,16 +14,33 @@ def get_autos():
         return jsonify({"error": f"Error al obtener autos: {str(e)}"}), 500
 
 
+@auto_bp.route("/autos/<string:patente>", methods=["GET"])
+def get_auto_by_patente(patente):
+    """
+    Endpoint para obtener toda la información de un auto específico por patente
+    Incluye: información básica, estado, seguro, historial de alquileres y mantenimientos
+    """
+    try:
+        auto_data = Auto.get_auto_by_patente_with_details(patente)
+
+        if auto_data is None:
+            return jsonify(
+                {"error": f"No se encontró un auto con patente: {patente}"}
+            ), 404
+
+        return jsonify(auto_data), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al obtener auto: {str(e)}"}), 500
+
+
 @auto_bp.route("/autos", methods=["POST"])
 def create_auto():
     try:
-        # Soportar tanto JSON como multipart/form-data con archivo 'imagen'
         imagen_bytes = None
 
         if request.content_type and request.content_type.startswith(
             "multipart/form-data"
         ):
-            # campos vienen en request.form, el archivo en request.files['imagen']
             marca = request.form.get("marca")
             modelo = request.form.get("modelo")
             anio = request.form.get("anio")
