@@ -7,6 +7,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
+    LargeBinary,
 )
 
 meta = MetaData()
@@ -111,6 +112,7 @@ automoviles = Table(
     Column("color", String(50), nullable=False),
     Column("precio", Float, nullable=False),
     Column("periocidad_mantenimiento", Integer, nullable=False),
+    Column("imagen", LargeBinary, nullable=True),
     Column("id_estado", Integer, ForeignKey("Estados.id_estado")),
     Column("id_seguro", Integer, ForeignKey("Seguros.id_seguro")),
 )
