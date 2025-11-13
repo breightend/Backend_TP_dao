@@ -4,6 +4,7 @@ from endpoints.routes.auto_bp import auto_bp
 from endpoints.routes.empleado_bp import empleado_bp
 from endpoints.routes.client_bp import client_bp
 from endpoints.routes.reportes_bp import reportes_bp
+from endpoints.routes.rentals_bp import rentals_bp
 
 
 def main():
@@ -14,6 +15,7 @@ def main():
     app.register_blueprint(empleado_bp)
     app.register_blueprint(auto_bp)
     app.register_blueprint(reportes_bp)
+    app.register_blueprint(rentals_bp)
 
     @app.route("/")
     def hello_world():
