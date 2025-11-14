@@ -8,7 +8,7 @@ class DatabaseEngineSingleton:
     # 2. Variable para almacenar el motor de SQLAlchemy
     engine = None
 
-    def __new__(cls, database_url: str = "sqlite:///db/database.db", echo: bool = True):
+    def __new__(cls, database_url: str = "sqlite:///db/database.db", echo: bool = False):
         """
         Garantiza que solo se cree una instancia de DatabaseEngineSingleton.
         """
