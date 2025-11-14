@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 
 from entities import reportes
+from db.connection import DatabaseEngineSingleton
+from sqlalchemy.sql import text
 
 reportes_bp = Blueprint("reportes", __name__, url_prefix="/api/reportes")
 
