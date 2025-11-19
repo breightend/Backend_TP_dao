@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from endpoints.routes.seguro_bp import seguro_bp
 from endpoints.routes.auto_bp import auto_bp
 from endpoints.routes.empleado_bp import empleado_bp
 from endpoints.routes.client_bp import client_bp
@@ -16,6 +17,7 @@ def main():
     app.register_blueprint(auto_bp)
     app.register_blueprint(reportes_bp)
     app.register_blueprint(rentals_bp)
+    app.register_blueprint(seguro_bp)
 
     @app.route("/")
     def hello_world():
