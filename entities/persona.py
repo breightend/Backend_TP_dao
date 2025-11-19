@@ -1,8 +1,6 @@
 from abc import ABC, ABCMeta 
 from sqlalchemy import Column, DateTime, Integer, String
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from db.base import Base
 
 Declarative_meta = type(Base)
 

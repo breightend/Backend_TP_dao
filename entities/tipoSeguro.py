@@ -1,17 +1,15 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
-
+from db.base import Base
 from db.connection import DatabaseEngineSingleton
 
+class TipoSeguro(Base):
+    __tablename__ = "Tipo_de_seguro"
 
-class TipoSeguro:
-    __tablename__ = "Tipo_Seguro"
+    id_tipo_seguro = Column("id_tipo_seguro", Integer, primary_key=True, autoincrement=True)
+    descripcion = Column("descripcion", String, nullable=False)
 
-    id_tipo_seguro = Column("id_tipo_seguro", Integer, primary_key=True)
-    descripcion = Column("descripcion", Integer, nullable=False)
-
-    def __init__(self, id_tipo_seguro: int, descripcion: str):
-        self.id_tipo_seguro = id_tipo_seguro
+    def __init__(self, descripcion: str):
         self.descripcion = descripcion
 
     def persist(self):
@@ -45,6 +43,26 @@ class TipoSeguro:
         except Exception as e:
             print(f"Error occurred while retrieving Tipo_Seguros: {e}")
             return []
+        finally:
+            session.close()
+
+    @classmethod
+    def get_single_tipo_seguro(cls, id_tipo_seguro: int):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            tipo_seguro = (
+                session.query(TipoSeguro)
+                .filter(TipoSeguro.id_tipo_seguro == id_tipo_seguro)
+                .first()
+            )
+            return tipo_seguro
+        except Exception as e:
+            print(f"Error occurred while retrieving Tipo_Seguro: {e}")
+            return None
         finally:
             session.close()
 

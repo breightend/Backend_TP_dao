@@ -1,30 +1,34 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import sessionmaker, relationship
+from db.base import Base
 from db.connection import DatabaseEngineSingleton
+from entities.tipoSeguro import TipoSeguro
+class Seguro(Base):
 
+    __tablename__ = "Seguros"
 
-class Seguro:
     poliza = Column("Poliza", Integer, primary_key=True)
     compañia = Column("Compañia", Integer, nullable=False)
     fechaVencimiento = Column("fecha_vencimiento", String(10), nullable=False)
-    tipoPoliza = Column("tipo_poliza", Integer, nullable=False)
+    tipoPoliza_id = Column("tipo_poliza", Integer, ForeignKey("Tipo_de_seguro.id_tipo_seguro"), nullable=False)
     descripcion = Column("descripcion", String(200), nullable=False)
     costo = Column("costo", Integer, nullable=False)
+
+    tipoPoliza = relationship(TipoSeguro)
 
     def __init__(
         self,
         poliza: int,
         compañia: str,
         fechaVencimiento: str,
-        tipoPoliza: int,
+        tipoPoliza_id: int,
         descripcion: str,
         costo: float,
     ):
         self.poliza = poliza
         self.compañia = compañia
         self.fechaVencimiento = fechaVencimiento
-        self.tipoPoliza = tipoPoliza
+        self.tipoPoliza_id = tipoPoliza_id
         self.descripcion = descripcion
         self.costo = costo
 
