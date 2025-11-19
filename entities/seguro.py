@@ -69,7 +69,7 @@ class Seguro(Base):
             "poliza": self.poliza,
             "compañia": self.compañia,
             "fechaVencimiento": self.fechaVencimiento,
-            "tipoPoliza": self.tipoPoliza,
+            "tipoPoliza": self.tipoPoliza.to_dict() if self.tipoPoliza else None,
             "descripcion": self.descripcion,
             "costo": self.costo,
         }
