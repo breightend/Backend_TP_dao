@@ -130,7 +130,7 @@ seguros = Table(
     Column("poliza", Integer, primary_key=True),
     Column("compañia", String(200), nullable=False),
     Column("fecha_vencimiento", String(10), nullable=False),
-    Column("tipo_ṕoliza", Integer, ForeignKey("Tipo_de_seguro.id_tipo_seguro")),
+    Column("tipo_poliza", Integer, ForeignKey("Tipo_de_seguro.id_tipo_seguro")),
     Column("descripcion", String(10), nullable=False),
     Column("costo", Float, nullable=False),
 )
