@@ -127,9 +127,11 @@ tipo_seguro = Table(
 seguros = Table(
     "Seguros",
     meta,
-    Column("id_seguro", Integer, primary_key=True),
-    Column("descripcion", String(200), nullable=False),
-    Column("id_tipo_seguro", Integer, ForeignKey("Tipo_de_seguro.id_tipo_seguro")),
+    Column("poliza", Integer, primary_key=True),
+    Column("compañia", String(200), nullable=False),
+    Column("fecha_vencimiento", String(10), nullable=False),
+    Column("tipo_ṕoliza", Integer, ForeignKey("Tipo_de_seguro.id_tipo_seguro")),
+    Column("descripcion", String(10), nullable=False),
     Column("costo", Float, nullable=False),
 )
 
