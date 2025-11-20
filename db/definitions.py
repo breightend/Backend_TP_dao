@@ -114,7 +114,7 @@ automoviles = Table(
     Column("periocidad_mantenimiento", Integer, nullable=False),
     Column("imagen", LargeBinary, nullable=True),
     Column("id_estado", Integer, ForeignKey("Estados.id_estado")),
-    Column("id_seguro", Integer, ForeignKey("Seguros.id_seguro")),
+    Column("id_seguro", Integer, ForeignKey("Seguros.poliza")),
 )
 
 tipo_seguro = Table(

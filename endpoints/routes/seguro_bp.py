@@ -41,6 +41,8 @@ def create_seguro():
     try:
         datos = request.get_json()
 
+        print(datos)
+
         poliza = datos.get("poliza")
         compañia = datos.get("compañia")
         fechaVencimiento = datos.get("fechaVencimiento")
@@ -50,6 +52,8 @@ def create_seguro():
 
         if(TipoSeguro.get_single_tipo_seguro(tipoPoliza) is None):
             raise ValueError("Tipo de seguro no existente")
+        if(Seguro.get_single_seguro(poliza) is not None):
+            raise ValueError("Seguro con esa poliza ya existente")
         
         nuevo_seguro = Seguro(
             poliza=poliza,
