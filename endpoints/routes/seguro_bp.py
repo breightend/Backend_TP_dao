@@ -14,7 +14,7 @@ def get_seguros():
 
 @seguro_bp.route("/tipoSeguros", methods=["GET"])
 def get_tipo_seguros():
-    tipos_seguros = TipoSeguro.get_all_tipo_seguros()
+    tipos_seguros = TipoSeguro.get_all_tipo_seguro()
     return jsonify(tipos_seguros), 200
 
 @seguro_bp.route("/createTipoSeguro", methods=["POST"])
