@@ -1,3 +1,4 @@
+from entities.registroAlquilerAuto import RegistroAlquilerAuto
 from calendar import c
 
 from sqlalchemy.orm import sessionmaker
@@ -42,6 +43,25 @@ class Cliente(Persona):
         except Exception as e:
             session.rollback()
             print(f"Error occurred while persisting Cliente: {e}")
+        finally:
+            session.close()
+    
+    def delete(self):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            session.query(RegistroAlquilerAuto).
+
+            session.delete(self)
+
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error occurred while deleting Cliente: {e}")
         finally:
             session.close()
 
