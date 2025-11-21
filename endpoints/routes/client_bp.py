@@ -11,6 +11,16 @@ def get_users():
 
     return jsonify(clientes), 200
 
+@client_bp.route("/specific", methods=["GET"])
+def get_specific_user():
+
+    dni = request.args.get("dni")
+
+    cliente = Cliente.get_client_by_dni(dni)
+
+    return jsonify(cliente), 200
+
+
 
 @client_bp.route("/create", methods=["POST"])
 def create_users():
@@ -45,7 +55,7 @@ def create_users():
 def editClient():
     datos_json = request.get_json()
 
-    dni = datos_json.get("DNI")
+    dni = datos_json.get("dni")
     email = datos_json.get("email")
     telefono = datos_json.get("telefono")
     direccion = datos_json.get("direccion")
