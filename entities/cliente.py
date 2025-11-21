@@ -1,3 +1,5 @@
+from calendar import c
+
 from sqlalchemy.orm import sessionmaker
 
 from db.connection import DatabaseEngineSingleton
@@ -57,6 +59,22 @@ class Cliente(Persona):
         except Exception as e:
             print(f"Error occurred while retrieving clients: {e}")
             return []
+        finally:
+            session.close()
+
+    @classmethod
+    def get_client_by_dni(cls, dni):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            client = session.query(Cliente).filter_by(dni=dni).first()
+            return client
+        except Exception as e:
+            print(f"Error occurred while retrieving client by DNI: {e}")
+            return None
         finally:
             session.close()
 

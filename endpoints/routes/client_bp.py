@@ -7,9 +7,8 @@ client_bp = Blueprint("client", __name__, url_prefix="/clients")
 
 @client_bp.route("/", methods=["GET"])
 def get_users():
-    
     clientes = Cliente.get_all_clients()
-  
+
     return jsonify(clientes), 200
 
 
@@ -40,3 +39,30 @@ def create_users():
     nuevo_cliente.persist()
 
     return jsonify({"message": "Cliente creado exitosamente"}), 201
+
+
+@client_bp.route("/editClient", methods=["PUT"])
+def editClient():
+    datos_json = request.get_json()
+
+    dni = datos_json.get("DNI")
+    email = datos_json.get("email")
+    telefono = datos_json.get("telefono")
+    direccion = datos_json.get("direccion")
+
+    cliente_existente = Cliente.get_client_by_dni(dni)
+    if not cliente_existente:
+        return jsonify({"message": "Cliente no encontrado"}), 404
+
+    if email is not None:
+        cliente_existente.email = email
+
+    if telefono is not None:
+        cliente_existente.telefono = telefono
+
+    if direccion is not None:
+        cliente_existente.direccion = direccion
+
+    cliente_existente.persist()
+
+    return jsonify({"message": "Cliente actualizado exitosamente"}), 200
