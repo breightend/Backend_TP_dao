@@ -75,9 +75,11 @@ sanciones = Table(
     meta,
     Column("id_sancion", Integer, primary_key=True),
     Column("id_alquiler", Integer, ForeignKey("Alquileres_de_auto.id_alquiler")),
-    Column("precio", Float, nullable=False),
     Column("descripcion", String(200), nullable=False),
     Column("id_tipo_sancion", Integer, ForeignKey("Tipo_Sancion.id_sancion")),
+    Column("id_estado", Integer, ForeignKey("Estados.id_estado")),
+    Column("costo_base", Float, nullable=False),
+    Column("fecha", String(10), nullable=False)
 )
 
 mantenimientos = Table(
@@ -140,6 +142,18 @@ tipo_daño = Table(
     meta,
     Column("id_daño", Integer, primary_key=True),
     Column("nombre", String(100), nullable=False),
+    Column("costo_base", Float, nullable=False),
+)
+
+daño = Table(
+    "Daños",
+    meta,
+    Column("id_daño", Integer, primary_key=True),
+    Column("id_tipo_daño", Integer, ForeignKey("Tipo_de_daño.id_daño")),
+    Column("fecha", String(10), nullable=False),
+    Column("gravedad", Integer, nullable=False),
+    Column("id_estado", Integer, ForeignKey("Estados.id_estado")),
+    Column("id_sancion", Integer, ForeignKey("Sanciones.id_sancion"))
 )
 
 meta.create_all(engine)
