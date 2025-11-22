@@ -1,19 +1,24 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 import base64
-
+from sqlalchemy import Column, Integer, String, Float, LargeBinary
 from db.connection import DatabaseEngineSingleton
+from db.base import Base
 
 
-class Auto:
-    marca: str
-    modelo: str
-    anio: int
-    color: str
-    costo: float
-    patente: str
-    periodicidadMantenimineto: int
-    imagen: bytes | None
+class Auto(Base):
+    __tablename__ = "Automoviles"
+    
+    patente = Column("patente", String, primary_key=True)
+    marca = Column("marca", String)
+    modelo = Column("modelo", String)
+    anio = Column("año", Integer)
+    color = Column("color", String)
+    costo = Column("precio", Float)
+    periodicidadMantenimineto = Column("periocidad_mantenimiento", Integer)
+    imagen = Column("imagen", LargeBinary)
+    id_estado = Column("id_estado", Integer)
+    id_seguro = Column("id_seguro", Integer)
 
     def __init__(
         self,
@@ -24,6 +29,8 @@ class Auto:
         costo: float,
         patente: str,
         periodicidadMantenimineto: int,
+        id_estado: int,
+        id_seguro: int,
         imagen: bytes | None = None,
     ):
         self.marca = marca
@@ -34,6 +41,8 @@ class Auto:
         self.patente = patente
         self.periodicidadMantenimineto = periodicidadMantenimineto
         self.imagen = imagen
+        self.id_estado = id_estado
+        self.id_seguro = id_seguro
 
     def mostrar_informacion(self):
         return f"{self.marca} {self.modelo}, Año: {self.anio}, Color: {self.color}, Costo: ${self.costo}, Patente: {self.patente}, Periodicidad Mantenimiento: {self.periodicidadMantenimineto} meses"
@@ -47,7 +56,7 @@ class Auto:
         try:
             query = text("""
                 INSERT INTO Automoviles (patente, marca, modelo, año, color, precio, periocidad_mantenimiento, imagen, id_estado, id_seguro)
-                VALUES (:patente, :marca, :modelo, :anio, :color, :precio, :periodicidad, :imagen, 1, 1)
+                VALUES (:patente, :marca, :modelo, :anio, :color, :precio, :periodicidad, :imagen, :id_estado, :id_seguro)
             """)
 
             session.execute(
