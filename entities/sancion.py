@@ -105,7 +105,7 @@ class Sancion(Base):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id_sancion": self.id,
             "fecha": self.fecha,
             "tipo_sancion": self.tipo_sancion.to_dict(),
             "estado": self.estado.to_dict(),

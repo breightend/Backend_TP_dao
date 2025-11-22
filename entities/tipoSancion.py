@@ -69,6 +69,6 @@ class TipoSancion(Base):
     
     def to_dict(self):
         return {
-            "id": self.id,
+            "id_tipo_sancion": self.id,
             "descripcion": self.descripcion
         }

@@ -83,7 +83,7 @@ class Empleado(Persona):
 
     def to_dict(self) -> dict:
         return {
-            "legajo": self.legajo,
+            "legajo_empleado": self.legajo,
             "nombre": self.nombre,
             "apellido": self.apellido,
             "direccion": self.direccion,

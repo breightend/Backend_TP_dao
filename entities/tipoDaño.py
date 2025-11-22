@@ -38,7 +38,7 @@ class TipoDaño(Base):
 
   def to_dict(self):
     return {
-      "id": self.id,
+      "id_tipo_daño": self.id,
       "nombre": self.nombre,
       "costoBase": self.costoBase
     }

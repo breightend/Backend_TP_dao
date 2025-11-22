@@ -67,7 +67,7 @@ class Estado(Base):
     
   def to_dict(self):
     return {
-      "id": self.id,
+      "id_estado": self.id,
       "nombre": self.nombre,
       "ambito": self.ambito
     }

@@ -111,7 +111,7 @@ class Cliente(Persona):
 
     def to_dict(self):
         return {
-            "dni": self.dni,
+            "dni_cliente": self.dni,
             "nombre": self.nombre,
             "apellido": self.apellido,
             "direccion": self.direccion,

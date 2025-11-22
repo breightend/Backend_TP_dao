@@ -86,7 +86,7 @@ class Seguro(Base):
 
     def to_dict(self):
         return {
-            "poliza": self.poliza,
+            "poliza_seguro": self.poliza,
             "compañia": self.compañia,
             "fechaVencimiento": self.fechaVencimiento,
             "tipoPoliza": self.tipoPoliza.to_dict() if self.tipoPoliza else None,
