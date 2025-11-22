@@ -1,9 +1,9 @@
-from tipoSancion import TipoSancion
-from daño import Daño
+from .tipoSancion import TipoSancion
+from .daño import Daño
 
 from db.connection import DatabaseEngineSingleton
 from db.base import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship, sessionmaker
 
 class Sancion(Base):
@@ -16,20 +16,17 @@ class Sancion(Base):
     costo_base = Column("costo_base", Float, nullable=False)
     descripcion = Column("descripcion", String(200), nullable=False)
     id_alquiler = Column("id_alquiler", Integer, ForeignKey("Alquileres_de_auto.id_alquiler"))
-    
-    daños: List[Daño]
 
-    tipo_sancion = relationship("TipoSancion", back_populates="sanciones")
-    estado = relationship("Estado", back_populates="sanciones")
+    tipo_sancion = relationship("TipoSancion")
+    estado = relationship("Estado")
     
     
-    def __init__(self, fecha: str, tipo: TipoSancion, estado: Estado, costoBase: float, descripcion: str):
+    def __init__(self, fecha: str, tipo: TipoSancion, id_estado: int, costoBase: float, descripcion: str):
         self.fecha = fecha
         self.tipo = tipo
-        self.estado = estado
+        self.id_estado = id_estado
         self.costoBase = costoBase
         self.descripcion = descripcion
-        self.daños = []
     
     def calcularCostoTotal(self) -> float:
         costoTotalDaños = sum(daño.calcularCostoTotal() for daño in self.daños)
@@ -59,9 +56,8 @@ class Sancion(Base):
 
             daños = session.query(Daño).filter(Daño.id_sancion == self.id).all()
             session.close()
-            self.daños = daños
         
-        return self.daños
+        return daños
 
     
     @classmethod
@@ -91,6 +87,17 @@ class Sancion(Base):
             return None
         finally:
             session.close()
+
+    @classmethod
+    def get_all_estados_sanciones(cls):
+        from .estado import Estado
+        try:
+            estados = Estado.get_all_estados_de_ambito("Sanciones")
+            print(estados)
+            return estados
+        except Exception as e:
+            print(f"Error occurred while retrieving Estados de Sanciones: {e}")
+            return []
 
 
    

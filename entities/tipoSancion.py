@@ -10,17 +10,19 @@ class TipoSancion(Base):
     id = Column("id_sancion", Integer, primary_key=True)
     descripcion = Column("descripcion", String(100), nullable=False)
 
-    def __init__(self, nombre: str):
-        self.nombre = nombre
+    def __init__(self, descripcion: str):
+        self.descripcion = descripcion
 
-    def getNombre(self) -> str:
-        return self.nombre
+    def getDescripcion(self) -> str:
+        return self.descripcion
 
-    def setNombre(self, nombre: str):
-        self.nombre = nombre
+    def setDescripcion(self, descripcion: str):
+        self.descripcion = descripcion
 
     def persist(self):
+
         engine = DatabaseEngineSingleton().engine
+
         Session = sessionmaker(bind=engine)
         session = Session()
         session.add(self)
@@ -45,7 +47,10 @@ class TipoSancion(Base):
         session = Session()
         try:
             tipos_sancion = session.query(TipoSancion).all()
-            return tipos_sancion
+            tipos_sancion_data = [
+                tipo_sancion.to_dict() for tipo_sancion in tipos_sancion
+            ]
+            return tipos_sancion_data
         except Exception as e:
             print(f"Error occurred while retrieving Tipos de Sancion: {e}")
             return []
@@ -59,7 +64,8 @@ class TipoSancion(Base):
         session = Session()
         try:
             tipo_sancion = session.query(TipoSancion).filter(TipoSancion.id == id).first()
-            return tipo_sancion
+            tipo_sancion_data = tipo_sancion.to_dict() if tipo_sancion else None
+            return tipo_sancion_data
         except Exception as e:
             print(f"Error occurred while retrieving Tipo de Sancion: {e}")
             return None
