@@ -1,7 +1,7 @@
 
 from db.connection import DatabaseEngineSingleton
 from db.base import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import sessionmaker
 
 class TipoDaño(Base):

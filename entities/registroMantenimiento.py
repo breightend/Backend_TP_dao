@@ -1,27 +1,27 @@
 from datetime import datetime
 from re import M
 
-from auto import Auto
-from mantenimiento import Mantenimiento
+from .auto import Auto
+from .mantenimiento import Mantenimiento
 
 
-class RegistroMantenimiento(Mantenimiento):
+class RegistroMantenimiento:
     fechaInicio: str
     fechaFin: str
-    mantenimientos: list[Mantenimiento]
     auto: Auto
 
     def __init__(
         self,
         fechaInicio: str,
-        fechaFin: str,
-        mantenimientos: list[Mantenimiento],
+        fechaFin: str,,
         auto: Auto,
     ):
         self.fechaInicio = fechaInicio
         self.fechaFin = fechaFin
-        self.mantenimientos = mantenimientos
+
         self.auto = auto
+
+    # Hacer la consulta a base de datos para obtener todos los mantenimientos de este registro
 
     def calcularCostoTotal(self) -> float:
         total = 0.0

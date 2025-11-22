@@ -1,4 +1,3 @@
-from entities.registroAlquilerAuto import RegistroAlquilerAuto
 from calendar import c
 
 from sqlalchemy.orm import sessionmaker
@@ -47,13 +46,25 @@ class Cliente(Persona):
             session.close()
     
     def delete(self):
+        from entities.registroAlquilerAuto import RegistroAlquilerAuto
         engine = DatabaseEngineSingleton().engine
 
         Session = sessionmaker(bind=engine)
         session = Session()
 
         try:
-            session.query(RegistroAlquilerAuto).
+            existing_rentals = (
+                session.query(RegistroAlquilerAuto)
+                .filter_by(dni_cliente=self.dni)
+                .first()
+            )
+            if existing_rentals:
+                print(
+                    f"No se puede eliminar el cliente {self.dni} porque tiene alquileres asociados."
+                )
+                session.rollback()
+                return
+            
 
             session.delete(self)
 

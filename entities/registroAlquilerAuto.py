@@ -4,10 +4,10 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, sessionmaker
 
 from typing import List
-from cliente import Cliente
-from empleado import Empleado
-from auto import Auto
-from sancion import Sancion
+from .cliente import Cliente
+from .empleado import Empleado
+from .auto import Auto
+from .sancion import Sancion
 
 
 class RegistroAlquilerAuto(Base):
@@ -22,11 +22,10 @@ class RegistroAlquilerAuto(Base):
   precio = Column("precio", Float)
   dni_cliente = Column("dni_cliente", Integer, ForeignKey("Clientes.dni"))
   legajo_empleado = Column("legajo_empleado", Integer, ForeignKey("Empleados.legajo"))
-  sanciones: List[Sancion]
 
-  auto = relationship("Auto", back_populates="alquileres")
-  cliente = relationship("Cliente", back_populates="alquileres")
-  empleado = relationship("Empleado", back_populates="alquileres")
+  auto = relationship("Auto")
+  cliente = relationship("Cliente")
+  empleado = relationship("Empleado")
   
   def __init__(self, fechaInicio: string, precio: float, dni_cliente: int, legajo_empleado: int, patente_vehiculo: string) -> None:
     self.fechaInicio = fechaInicio
@@ -54,9 +53,8 @@ class RegistroAlquilerAuto(Base):
 
       sanciones = session.query(Sancion).filter(Sancion.id_alquiler == self.id).all()
       session.close()
-      self.sanciones = sanciones
     
-    return self.sanciones
+    return sanciones
 
   def persist(self):
     engine = DatabaseEngineSingleton().engine
