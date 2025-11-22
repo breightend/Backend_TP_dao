@@ -1,5 +1,5 @@
-from estado import Estado
-from tipoDaño import TipoDaño
+from .estado import Estado
+from .tipoDaño import TipoDaño
 from db.base import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, sessionmaker

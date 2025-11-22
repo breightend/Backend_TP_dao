@@ -1,11 +1,13 @@
 from db.base import Base
 from db.connection import DatabaseEngineSingleton
+from sqlalchemy import Column, Integer, String 
+from sqlalchemy.orm import sessionmaker
 
 class Estado(Base):
   
   __tablename__ = "Estados"
 
-  id = Column("id", Integer, primary_key=True)
+  id = Column("id_estado", Integer, primary_key=True)
   nombre = Column("nombre", String, nullable=False)
   ambito = Column("ambito", String, nullable=False)
   
@@ -27,7 +29,8 @@ class Estado(Base):
     session = Session()
     try:
       estados = session.query(Estado).filter(Estado.ambito == ambito).all()
-      return estados
+      estados_data = [estado.to_dict() for estado in estados]
+      return estados_data
     except Exception as e:
       print(f"Error occurred while retrieving Estados: {e}")
       return []
