@@ -11,6 +11,7 @@ from endpoints.routes.client_bp import client_bp
 from endpoints.routes.reportes_bp import reportes_bp
 from endpoints.routes.rentals_bp import rentals_bp
 from endpoints.routes.sanciones_bp import sanciones_bp
+from endpoints.routes.daños_bp import daño_bp
 
 
 def main():
@@ -24,6 +25,7 @@ def main():
     app.register_blueprint(rentals_bp)
     app.register_blueprint(seguro_bp)
     app.register_blueprint(sanciones_bp)
+    app.register_blueprint(daño_bp)
 
     @app.route("/")
     def hello_world():

@@ -50,6 +50,7 @@ class TipoDaño(Base):
     session = Session()
     try:
       tipo_daño = session.query(TipoDaño).filter(TipoDaño.id == id).first()
+      tipo_daño = tipo_daño.to_dict()
       return tipo_daño
     except Exception as e:
       print(f"Error occurred while retrieving Tipo de Daño: {e}")
@@ -64,6 +65,7 @@ class TipoDaño(Base):
     session = Session()
     try:
       tipo_daños = session.query(TipoDaño).all()
+      tipo_daños = [tipo_daño.to_dict() for tipo_daño in tipo_daños]
       return tipo_daños
     except Exception as e:
       print(f"Error occurred while retrieving Tipo de Daños: {e}")
