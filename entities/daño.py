@@ -17,11 +17,13 @@ class Daño(Base):
 
     estado = relationship("Estado")
     tipo_daño = relationship("TipoDaño")
+    sancion = relationship("Sancion")
     
-    def __init__(self, fecha: str, gravedad: int, estado: Estado, tipoDaño: TipoDaño):
+    def __init__(self, fecha: str, gravedad: int, id_estado: int, id_tipo_daño: int, id_sancion: int):
         self.fecha = fecha
-        self.estado = estado
-        self.tipoDaño = tipoDaño
+        self.estado_id = id_estado
+        self.tipo_daño_id = id_tipo_daño
+        self.sancion_id = id_sancion
 
         if gravedad < 1:
             self.gravedad = 1
@@ -43,7 +45,10 @@ class Daño(Base):
         return self.tipoDaño
 
     def calcularCostoTotal(self):
-        return int(self.tipoDaño.getCostoBase() * (1 + self.gravedad / 10))
+        # Note: This might fail if tipoDaño relationship is not loaded. 
+        # For calculation, we might need to fetch it or ensure it's loaded.
+        # Assuming it's accessed via relationship.
+        return int(self.tipo_daño.getCostoBase() * (1 + self.gravedad / 10))
 
     def actualizarEstado(self, nuevoEstado: Estado):
         self.estado = nuevoEstado
@@ -63,11 +68,12 @@ class Daño(Base):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id_daño": self.id,
             "fecha": self.fecha,
             "gravedad": self.gravedad,
             "estado": self.estado.to_dict() if self.estado else None,
-            "tipoDaño": self.tipoDaño.to_dict() if self.tipoDaño else None
+            "tipoDaño": self.tipo_daño.to_dict() if self.tipo_daño else None,
+            "sancion": self.sancion.to_dict() if self.sancion else None
         }
     
     @classmethod
@@ -94,6 +100,21 @@ class Daño(Base):
             return daños
         except Exception as e:
             print(f"Error occurred while retrieving Daños: {e}")
+            return []
+        finally:
+            session.close()
+
+    @classmethod
+    def get_daños_by_sancion_id(cls, id_sancion: int):
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        try:
+            daños = session.query(Daño).filter(Daño.sancion_id == id_sancion).all()
+            daños = [daño.to_dict() for daño in daños]
+            return daños
+        except Exception as e:
+            print(f"Error occurred while retrieving Daños for Sancion {id_sancion}: {e}")
             return []
         finally:
             session.close()
