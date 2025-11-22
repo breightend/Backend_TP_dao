@@ -1,33 +1,31 @@
 from db.connection import DatabaseEngineSingleton
 from db.base import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship, sessionmaker
 
 from typing import List
 from .cliente import Cliente
 from .empleado import Empleado
 from .auto import Auto
-from .sancion import Sancion
+from datetime import datetime
 
 
 class RegistroAlquilerAuto(Base):
-
-
-  __tablename__ = "Alquileres_de_autos"
+  __tablename__ = "Alquileres_de_auto"
 
   id = Column("id_alquiler", Integer, primary_key=True)
-  patente_vehiculo = Column("patente_vehiculo", Integer, ForeignKey("Autos.id"))
+  patente_vehiculo = Column("patente_vehiculo", String, ForeignKey("Automoviles.patente"))
   fechaInicio = Column("fecha_inicio", String)
   fechaFin = Column("fecha_fin", String)
   precio = Column("precio", Float)
   dni_cliente = Column("dni_cliente", Integer, ForeignKey("Clientes.dni"))
   legajo_empleado = Column("legajo_empleado", Integer, ForeignKey("Empleados.legajo"))
 
-  auto = relationship("Auto")
-  cliente = relationship("Cliente")
-  empleado = relationship("Empleado")
+  auto = relationship(Auto)
+  cliente = relationship(Cliente)
+  empleado = relationship(Empleado)
   
-  def __init__(self, fechaInicio: string, precio: float, dni_cliente: int, legajo_empleado: int, patente_vehiculo: string) -> None:
+  def __init__(self, fechaInicio: str, precio: float, dni_cliente: int, legajo_empleado: int, patente_vehiculo: str) -> None:
     self.fechaInicio = fechaInicio
     self.fechaFin = ""
     self.precio = precio
@@ -47,6 +45,9 @@ class RegistroAlquilerAuto(Base):
 
   def obtenerSancionesDeAlquiler(self):
     if self.sanciones == []:
+
+      from .sancion import Sancion
+
       engine = DatabaseEngineSingleton().engine
       Session = sessionmaker(bind=engine)
       session = Session()

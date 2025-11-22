@@ -21,12 +21,13 @@ class Sancion(Base):
     estado = relationship("Estado")
     
     
-    def __init__(self, fecha: str, tipo: TipoSancion, id_estado: int, costoBase: float, descripcion: str):
+    def __init__(self, fecha: str, id_tipo_sancion: int, id_estado: int, costo_base: float, descripcion: str, id_alquiler: int):
         self.fecha = fecha
-        self.tipo = tipo
+        self.id_tipo_sancion = id_tipo_sancion
         self.id_estado = id_estado
-        self.costoBase = costoBase
+        self.costo_base = costo_base
         self.descripcion = descripcion
+        self.id_alquiler = id_alquiler
     
     def calcularCostoTotal(self) -> float:
         costoTotalDaños = sum(daño.calcularCostoTotal() for daño in self.daños)
@@ -67,6 +68,7 @@ class Sancion(Base):
         session = Session()
         try:
             sanciones = session.query(Sancion).filter(Sancion.id_alquiler == alquiler_id).all()
+            sanciones = [s.to_dict() for s in sanciones]
             return sanciones
         except Exception as e:
             print(f"Error occurred while retrieving Sanciones: {e}")
@@ -100,4 +102,14 @@ class Sancion(Base):
             return []
 
 
-   
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "fecha": self.fecha,
+            "tipo_sancion": self.tipo_sancion.to_dict(),
+            "estado": self.estado.to_dict(),
+            "costo_base": self.costo_base,
+            "descripcion": self.descripcion,
+            "id_alquiler": self.id_alquiler
+        }

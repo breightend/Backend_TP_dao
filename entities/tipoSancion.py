@@ -34,11 +34,6 @@ class TipoSancion(Base):
         finally:
             session.close()
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "descripcion": self.descripcion
-        }
 
     @classmethod
     def get_all_tipos_sancion(cls):
@@ -71,3 +66,9 @@ class TipoSancion(Base):
             return None
         finally:
             session.close()
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "descripcion": self.descripcion
+        }
