@@ -14,6 +14,19 @@ def get_autos():
         return jsonify({"error": f"Error al obtener autos: {str(e)}"}), 500
 
 
+@auto_bp.route("/autos/available", methods=["GET"])
+def get_autos_available():
+    try:
+        autos_data = Auto.get_autos_available()
+
+        autos_data = [auto.to_dict() for auto in autos_data]
+
+        print(autos_data)
+
+        return jsonify(autos_data), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al obtener autos: {str(e)}"}), 500
+
 @auto_bp.route("/autos/<string:patente>", methods=["GET"])
 def get_auto_by_patente(patente):
     """

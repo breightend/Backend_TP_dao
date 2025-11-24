@@ -1,7 +1,7 @@
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import text
 import base64
-from sqlalchemy import Column, Integer, String, Float, LargeBinary
+from sqlalchemy import Column, Integer, String, Float, LargeBinary, ForeignKey
 from db.connection import DatabaseEngineSingleton
 from db.base import Base
 
@@ -17,8 +17,11 @@ class Auto(Base):
     costo = Column("precio", Float)
     periodicidadMantenimineto = Column("periocidad_mantenimiento", Integer)
     imagen = Column("imagen", LargeBinary)
-    id_estado = Column("id_estado", Integer)
-    id_seguro = Column("id_seguro", Integer)
+    id_estado = Column("id_estado", Integer, ForeignKey("Estados.id_estado"))
+    id_seguro = Column("id_seguro", Integer, ForeignKey("Seguros.Poliza"))
+
+    estado = relationship("Estado")
+    seguro = relationship("Seguro")
 
     def __init__(
         self,
@@ -29,7 +32,6 @@ class Auto(Base):
         costo: float,
         patente: str,
         periodicidadMantenimineto: int,
-        id_estado: int,
         id_seguro: int,
         imagen: bytes | None = None,
     ):
@@ -41,7 +43,7 @@ class Auto(Base):
         self.patente = patente
         self.periodicidadMantenimineto = periodicidadMantenimineto
         self.imagen = imagen
-        self.id_estado = id_estado
+        self.id_estado = 1
         self.id_seguro = id_seguro
 
     def mostrar_informacion(self):
@@ -78,6 +80,23 @@ class Auto(Base):
         except Exception as e:
             session.rollback()
             print(f"Error occurred while persisting Auto: {e}")
+            raise e
+        finally:
+            session.close()
+    
+    def changeState(self, id_estado: int):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            session.query(Auto).filter_by(patente=self.patente).update({"id_estado": id_estado})
+            session.commit()
+            print(f"Auto {self.patente} estado cambiado exitosamente")
+        except Exception as e:
+            session.rollback()
+            print(f"Error occurred while changing state of Auto: {e}")
             raise e
         finally:
             session.close()
@@ -122,6 +141,22 @@ class Auto(Base):
         finally:
             session.close()
 
+    @classmethod
+    def get_autos_available(cls):
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            autos = session.query(cls).filter_by(id_estado=2).all()
+            return autos
+        except Exception as e:
+            print(f"Error occurred while retrieving autos: {e}")
+            return []
+        finally:
+            session.close()
+
     def to_dict(self):
         return {
             "patente": self.patente,
@@ -135,6 +170,21 @@ class Auto(Base):
             if self.imagen
             else None,
         }
+
+    @classmethod
+    def get_auto_by_patente(cls, patente: str):
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            auto = session.query(Auto).filter_by(patente=patente).first()
+            return auto
+        except Exception as e:
+            print(f"Error occurred while retrieving Auto: {e}")
+            return None
+        finally:
+            session.close()
 
     @classmethod
     def get_auto_by_patente_with_details(cls, patente: str):
