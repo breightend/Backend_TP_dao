@@ -44,18 +44,28 @@ class RegistroAlquilerAuto(Base):
     pass
 
   def obtenerSancionesDeAlquiler(self):
-    if self.sanciones == []:
+    from .sancion import Sancion
+    from sqlalchemy.orm import joinedload
 
-      from .sancion import Sancion
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-      engine = DatabaseEngineSingleton().engine
-      Session = sessionmaker(bind=engine)
-      session = Session()
-
-      sanciones = session.query(Sancion).filter(Sancion.id_alquiler == self.id).all()
-      session.close()
+    sanciones = (
+        session.query(Sancion)
+        .options(joinedload(Sancion.tipo_sancion), joinedload(Sancion.estado))
+        .filter(Sancion.id_alquiler == self.id)
+        .all()
+    )
+    session.close()
     
     return sanciones
+  
+  def obtenerSancionesDict(self):
+
+    sanciones = self.obtenerSancionesDeAlquiler()
+
+    return [sancion.to_dict() for sancion in sanciones]
 
   def persist(self):
     engine = DatabaseEngineSingleton().engine
@@ -70,3 +80,46 @@ class RegistroAlquilerAuto(Base):
       raise e
     finally:
       session.close()
+
+  @classmethod
+  def get_all_rentals(cls):
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+      rentals = session.query(cls).all()
+    except Exception as e:
+      session.rollback()
+      raise e
+    finally:
+      session.close()
+
+    return rentals
+
+  @classmethod
+  def get_all_rentals_description(cls):
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+      rentals = session.query(cls).all()
+      return [rental.to_dict() for rental in rentals]
+    except Exception as e:
+      session.rollback()
+      raise e
+    finally:
+      session.close()
+
+  def to_dict(self):
+    return {
+      "id": self.id,
+      "vehiculo": self.auto.to_dict() if self.auto else None,
+      "fechaInicio": self.fechaInicio,
+      "fechaFin": self.fechaFin,
+      "precio": self.precio,
+      "cliente": self.cliente.to_dict() if self.cliente else None,
+      "empleado": self.empleado.to_dict() if self.empleado else None,
+      "sanciones": self.obtenerSancionesDict()
+    }

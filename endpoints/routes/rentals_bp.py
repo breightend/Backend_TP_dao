@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from db.connection import DatabaseEngineSingleton
-from sqlalchemy import text
+from entities.registroAlquilerAuto import RegistroAlquilerAuto
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/api/rentals")
 
@@ -23,38 +22,10 @@ def _map_rental_row(row):
     }
 
 
-@rentals_bp.route("/", methods=["GET"], strict_slashes=False)
+@rentals_bp.route("/", methods=["GET"])
 def list_rentals():
-    engine = DatabaseEngineSingleton().engine
-    with engine.connect() as connection:
-        result = connection.execute(
-            text(
-                """
-                SELECT
-                    al.id_alquiler,
-                    al.dni_cliente,
-                    al.patente_vehiculo,
-                    al.legajo_empleado,
-                    al.precio,
-                    al.fecha_inicio,
-                    al.fecha_fin,
-                    c.nombre AS cliente_nombre,
-                    c.apellido AS cliente_apellido,
-                    a.marca AS auto_marca,
-                    a.modelo AS auto_modelo,
-                    a.patente AS auto_patente,
-                    e.nombre AS empleado_nombre,
-                    e.apellido AS empleado_apellido
-                FROM Alquileres_de_auto al
-                LEFT JOIN Clientes c ON c.dni = al.dni_cliente
-                LEFT JOIN Automoviles a ON a.patente = al.patente_vehiculo
-                LEFT JOIN Empleados e ON e.legajo = al.legajo_empleado
-                ORDER BY al.id_alquiler DESC
-                """
-            )
-        )
-        rentals = [_map_rental_row(row) for row in result]
-        return jsonify(rentals), 200
+    rentals = RegistroAlquilerAuto.get_all_rentals_description()
+    return jsonify(rentals), 200
 
 
 @rentals_bp.route("/", methods=["POST"], strict_slashes=False)

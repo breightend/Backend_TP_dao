@@ -166,9 +166,6 @@ class Auto(Base):
             "color": self.color,
             "costo": self.costo,
             "periodicidadMantenimineto": self.periodicidadMantenimineto,
-            "imagen": base64.b64encode(self.imagen).decode("utf-8")
-            if self.imagen
-            else None,
         }
 
     @classmethod
