@@ -60,7 +60,7 @@ class RegistroMantenimiento(Base):
             session.close()
 
     @classmethod
-    def get_orden_by_id(cls, id_orden: int):
+    def get_orden_by_id(cls, id_orden: int, objectNeeded: bool):
         engine = DatabaseEngineSingleton().engine
         session_maker = sessionmaker(bind=engine)
         session = session_maker()
@@ -68,6 +68,8 @@ class RegistroMantenimiento(Base):
         try:
             orden = session.query(cls).filter(cls.id_orden == id_orden).first()
             if orden:
+                if objectNeeded:
+                    return orden
                 # Convertir a dict antes de cerrar la sesión para evitar lazy loading issues
                 orden_dict = orden.to_dict()
                 return orden_dict

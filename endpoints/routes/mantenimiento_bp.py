@@ -4,6 +4,7 @@ from entities.mantenimiento import Mantenimiento
 from db.connection import DatabaseEngineSingleton
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
+from entities.auto import Auto
 
 mantenimiento_bp = Blueprint("mantenimiento", __name__, url_prefix="/api/mantenimiento")
 
@@ -124,6 +125,9 @@ def create_orden():
                 nueva_orden.mantenimientos.append(mantenimiento)
         
         orden_id = nueva_orden.persist()
+
+        autoEnMantimiento = Auto.get_auto_by_patente(datos["patente_vehiculo"])
+        autoEnMantimiento.changeState(4)
         
         return jsonify({
             "message": "Orden de mantenimiento creada exitosamente",
@@ -135,6 +139,58 @@ def create_orden():
     except Exception as e:
         print(f"Error al crear orden: {e}")
         return jsonify({"error": "Error al crear la orden de mantenimiento"}), 500
+
+@mantenimiento_bp.route("/ordenes/<int:id_orden>/edit", methods=["PUT"])
+def edit_orden(id_orden):
+    """Editar una orden de mantenimiento"""
+    try:
+        datos = request.get_json()
+        
+        # Validar campos requeridos
+        required_fields = ["fecha_fin"]
+        missing_fields = [field for field in required_fields if field not in datos or not datos[field]]
+        
+        if missing_fields:
+            return jsonify({
+                "error": "Faltan campos requeridos",
+                "campos": missing_fields
+            }), 400
+        
+        
+        orden = RegistroMantenimiento.get_orden_by_id(id_orden, True)
+        if not orden:
+            return jsonify({"error": "Orden no encontrada"}), 404
+        
+        from datetime import datetime
+        try:
+            fecha_fin = datetime.strptime(datos["fecha_fin"], "%Y-%m-%d")
+            fecha_hoy = datetime.now()
+            fecha_inicio = datetime.strptime(orden.fecha_inicio, "%Y-%m-%d")
+                
+            if fecha_fin < fecha_hoy:
+                return jsonify({
+                    "error": "La fecha de fin debe ser mayor o igual a la fecha de hoy"
+                }), 400
+
+            if fecha_fin <= fecha_inicio:
+                return jsonify({
+                    "error": "La fecha de fin debe ser mayor a la fecha de inicio"
+                }), 400
+            
+            
+        except ValueError:
+            return jsonify({
+                "error": "Formato de fecha inválido. Use YYYY-MM-DD"
+            }), 400
+
+        orden.fecha_fin = datos["fecha_fin"]
+        
+        orden.persist()
+        
+        return jsonify({"message": "Orden editada exitosamente"}), 200
+    except Exception as e:
+        print(f"Error al editar orden {id_orden}: {e}")
+        return jsonify({"error": "Error al editar la orden"}), 500
 
 
 @mantenimiento_bp.route("/ordenes/<int:id_orden>", methods=["DELETE"])
