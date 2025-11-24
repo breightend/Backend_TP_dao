@@ -31,7 +31,7 @@ class Sancion(Base):
     
     def calcularCostoTotal(self) -> float:
         costoTotalDaños = sum(daño.calcularCostoTotal() for daño in self.daños)
-        return costoTotalDaños
+        return costoTotalDaños + self.costo_base
 
     def tiempoDeSancion(self) -> int:
         return self.tipo.getAños()
