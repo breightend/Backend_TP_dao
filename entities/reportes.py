@@ -88,7 +88,7 @@ def get_alquileres_detallados(
         JOIN Clientes c ON al.dni_cliente = c.dni
         JOIN Automoviles a ON a.patente = al.patente_vehiculo
         LEFT JOIN (
-            SELECT id_alquiler, SUM(precio) AS total_sanciones
+            SELECT id_alquiler, SUM(costo_base) AS total_sanciones
             FROM Sanciones
             GROUP BY id_alquiler
         ) s ON s.id_alquiler = al.id_alquiler
@@ -99,7 +99,7 @@ def get_alquileres_detallados(
 
     sanciones_query = text(
         """
-        SELECT id_sancion, precio, descripcion, id_tipo_sancion
+        SELECT id_sancion, costo_base AS precio, descripcion, id_tipo_sancion
         FROM Sanciones
         WHERE id_alquiler = :id_alquiler
         """
@@ -291,7 +291,7 @@ def get_facturacion_mensual(
             FROM Alquileres_de_auto al
             {where_clause}
         ), sanciones_por_alquiler AS (
-            SELECT id_alquiler, SUM(precio) AS total_sanciones
+            SELECT id_alquiler, SUM(costo_base) AS total_sanciones
             FROM Sanciones
             GROUP BY id_alquiler
         )
