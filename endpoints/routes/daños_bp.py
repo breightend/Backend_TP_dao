@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from entities.tipoDaño import TipoDaño
 from entities.daño import Daño
+from datetime import datetime
 
 daño_bp = Blueprint("daños", __name__, url_prefix="/api/daños")
 
@@ -21,7 +22,7 @@ def create_tipo_daño():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@daño_bp.route("/tipoDaño", methods=["GET"])
+@daño_bp.route("/tipoDaños", methods=["GET"])
 def get_all_tipo_daños():
     try:
         tipo_daños = TipoDaño.get_all_tipo_daños()
@@ -46,13 +47,13 @@ def get_tipo_daño_by_id(id):
 def create_daño():
     try:
         data = request.get_json()
-        fecha = data.get("fecha")
-        gravedad = data.get("gravedad")
-        id_estado = data.get("id_estado")
-        id_tipo_daño = data.get("id_tipo_daño")
-        id_sancion = data.get("id_sancion")
+        fecha = datetime.now().strftime("%Y-%m-%d")
+        gravedad = int(data.get("gravedad")) 
+        id_estado = 5
+        id_tipo_daño = int(data.get("id_tipo_daño"))
+        id_sancion = int(data.get("id_sancion"))
 
-        if not all([fecha, gravedad, id_estado, id_tipo_daño, id_sancion]):
+        if not all([fecha, gravedad, id_tipo_daño, id_sancion]):
              return jsonify({"error": "Missing required fields"}), 400
 
         daño = Daño(fecha, gravedad, id_estado, id_tipo_daño, id_sancion)

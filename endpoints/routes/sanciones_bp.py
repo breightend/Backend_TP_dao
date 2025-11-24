@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from entities.tipoSancion import TipoSancion
 from entities.sancion import Sancion
 from db.base import Base
+from datetime import datetime
 
 sanciones_bp = Blueprint("sanciones", __name__, url_prefix="/api/sanciones")
 
@@ -49,9 +50,9 @@ def get_all_estados_sancion():
 def create_sancion():
     try:
         data = request.get_json()
-        fecha = data.get("fecha")
+        fecha = datetime.now().strftime("%Y-%m-%d")
         id_tipo_sancion = data.get("id_tipo_sancion")
-        id_estado = data.get("id_estado")
+        id_estado = 7
         costo_base = data.get("costo_base")
         descripcion = data.get("descripcion")
         id_alquiler = data.get("id_alquiler")
@@ -69,9 +70,9 @@ def create_sancion():
         
         # print(sancion.to_dict())
 
-        sancion.persist()
+        id_Sancion = sancion.persist()
 
-        return jsonify({"message": "Sancion created successfully"}), 201
+        return jsonify({"message": "Sancion created successfully", "id_sancion": id_Sancion}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

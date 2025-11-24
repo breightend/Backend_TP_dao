@@ -43,6 +43,7 @@ class Sancion(Base):
         session.add(self)
         try:
             session.commit()
+            return self.id
         except Exception as e:
             session.rollback()
             raise e
