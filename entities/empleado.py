@@ -81,6 +81,19 @@ class Empleado(Persona):
         finally:
             session.close()
 
+    @classmethod
+    def get_employee_by_dni(cls, dni):
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+
+        with Session() as session:
+            try:
+                empleado = session.query(Empleado).filter_by(dni=dni).first()
+                return empleado
+            except Exception as e:
+                print(f"Error occurred while retrieving empleado by DNI: {e}")
+                return None
+
     def to_dict(self) -> dict:
         return {
             "legajo_empleado": self.legajo,

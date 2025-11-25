@@ -45,3 +45,42 @@ def create_users():
     nuevo_empleado.persist()
 
     return jsonify({"message": "Empleado creado exitosamente"}), 201
+
+
+@empleado_bp.route("/<dni>", methods=["GET"])
+def get_user(dni):
+    empleado = Empleado.get_employee_by_dni(dni)
+    if not empleado:
+        return jsonify({"message": "Empleado no encontrado"}), 404
+
+    return jsonify(empleado.to_dict()), 200
+
+
+@empleado_bp.route("/<dni>", methods=["PATCH"])
+def update_user(dni):
+    datos_json = request.get_json()
+
+    email = datos_json.get("email")
+    telefono = datos_json.get("telefono")
+    direccion = datos_json.get("direccion")
+    puesto = datos_json.get("puesto")
+    salario = datos_json.get("salario")
+
+    empleado = Empleado.get_employee_by_dni(dni)
+    if not empleado:
+        return jsonify({"message": "Empleado no encontrado"}), 404
+
+    if email is not None:
+        empleado.email = email
+    if telefono is not None:
+        empleado.telefono = telefono
+    if direccion is not None:
+        empleado.direccion = direccion
+    if puesto is not None:
+        empleado.puesto = puesto
+    if salario is not None:
+        empleado.salario = salario
+
+    empleado.persist()
+
+    return jsonify({"message": "Empleado actualizado exitosamente"}), 200
