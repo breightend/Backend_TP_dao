@@ -25,9 +25,9 @@ class RegistroAlquilerAuto(Base):
   cliente = relationship(Cliente)
   empleado = relationship(Empleado)
   
-  def __init__(self, fechaInicio: str, precio: float, dni_cliente: int, legajo_empleado: int, patente_vehiculo: str) -> None:
+  def __init__(self, fechaInicio: str, precio: float, dni_cliente: int, legajo_empleado: int, patente_vehiculo: str, fechaFin: str = "") -> None:
     self.fechaInicio = fechaInicio
-    self.fechaFin = ""
+    self.fechaFin = fechaFin 
     self.precio = precio
     self.dni_cliente = dni_cliente
     self.legajo_empleado = legajo_empleado
@@ -35,7 +35,7 @@ class RegistroAlquilerAuto(Base):
     self.sanciones = []
   
   def finalizarAlquiler(self):
-    self.fechaInicio = datetime.now().strftime("%Y-%m-%d")
+    self.fechaFin = datetime.now().strftime("%Y-%m-%d")
   
   def calcularCostoTotal(self):
     pass
