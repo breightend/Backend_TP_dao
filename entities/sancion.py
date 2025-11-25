@@ -4,7 +4,7 @@ from .daño import Daño
 from db.connection import DatabaseEngineSingleton
 from db.base import Base
 from sqlalchemy import Column, ForeignKey, Integer, String, Float
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, joinedload
 
 class Sancion(Base):
     __tablename__ = "Sanciones"
@@ -30,7 +30,12 @@ class Sancion(Base):
         self.id_alquiler = id_alquiler
     
     def calcularCostoTotal(self) -> float:
-        costoTotalDaños = sum(daño.calcularCostoTotal() for daño in self.daños)
+        
+        daños = self.obtenerDaños()
+
+        if daños == []:
+            return self.costo_base
+        costoTotalDaños = sum(daño.calcularCostoTotal() for daño in daños)
         return costoTotalDaños + self.costo_base
 
     def tiempoDeSancion(self) -> int:
@@ -51,13 +56,12 @@ class Sancion(Base):
             session.close()
 
     def obtenerDaños(self):
-        if self.daños == []:
-            engine = DatabaseEngineSingleton().engine
-            Session = sessionmaker(bind=engine)
-            session = Session()
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
-            daños = session.query(Daño).filter(Daño.id_sancion == self.id).all()
-            session.close()
+        daños = session.query(Daño).options(joinedload(Daño.tipo_daño)).filter(Daño.sancion_id == self.id).all()
+        session.close()
         
         return daños
 
@@ -110,7 +114,7 @@ class Sancion(Base):
             "fecha": self.fecha,
             "tipo_sancion": self.tipo_sancion.to_dict(),
             "estado": self.estado.to_dict(),
-            "costo_base": self.costo_base,
             "descripcion": self.descripcion,
-            "id_alquiler": self.id_alquiler
+            "id_alquiler": self.id_alquiler,
+            "costo_total": self.calcularCostoTotal()
         }
