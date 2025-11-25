@@ -138,23 +138,6 @@ class Auto(Base):
         except Exception as e:
             print(f"Error occurred while retrieving autos: {e}")
             return []
-        finally:
-            session.close()
-
-    @classmethod
-    def get_autos_available(cls):
-        engine = DatabaseEngineSingleton().engine
-
-        Session = sessionmaker(bind=engine)
-        session = Session()
-
-        try:
-            autos = session.query(cls).filter_by(id_estado=2).all()
-            return autos
-        except Exception as e:
-            print(f"Error occurred while retrieving autos: {e}")
-            return []
-        finally:
             session.close()
 
     def to_dict(self):
@@ -166,6 +149,8 @@ class Auto(Base):
             "color": self.color,
             "costo": self.costo,
             "periodicidadMantenimineto": self.periodicidadMantenimineto,
+            "estado": self.estado.to_dict(),
+            "seguro": self.seguro.to_dict(),
         }
 
     @classmethod
@@ -180,6 +165,27 @@ class Auto(Base):
         except Exception as e:
             print(f"Error occurred while retrieving Auto: {e}")
             return None
+        finally:
+            session.close()
+
+    @classmethod
+    def get_autos_available(cls):
+        from sqlalchemy.orm import joinedload
+        from entities.seguro import Seguro
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            autos = session.query(cls).options(
+                joinedload(cls.estado), 
+                joinedload(cls.seguro).joinedload(Seguro.tipoPoliza)
+            ).filter_by(id_estado=2).all()
+            return autos
+        except Exception as e:
+            print(f"Error occurred while retrieving autos: {e}")
+            return []
         finally:
             session.close()
 
