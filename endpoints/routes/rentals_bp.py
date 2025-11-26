@@ -14,6 +14,11 @@ def list_active_rentals():
     rentals = RegistroAlquilerAuto.get_active_rentals()
     return jsonify(rentals), 200
 
+@rentals_bp.route("/bad", methods=["GET"])
+def list_bad_rentals():
+    rentals = RegistroAlquilerAuto.get_bad_rentals()
+    return jsonify(rentals), 200
+
 @rentals_bp.route("/carAvailable", methods=["GET"])
 def car_available():
     patente_vehiculo = request.args.get("patente_vehiculo")

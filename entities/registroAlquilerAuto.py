@@ -44,6 +44,11 @@ class RegistroAlquilerAuto(Base):
         self.id_estado = estado["id_estado"]
         break
 
+    sanciones = self.obtenerSancionesDeAlquiler()
+    for sancion in sanciones:
+      sancion.pagarSancion()
+    
+
   def actualizar_alquiler(self, nueva_fecha_fin: str, costo_diario: float):
       from datetime import timedelta
       fmt = "%Y-%m-%d"
@@ -88,6 +93,22 @@ class RegistroAlquilerAuto(Base):
     sanciones = self.obtenerSancionesDeAlquiler()
 
     return [sancion.to_dict() for sancion in sanciones]
+  
+  @classmethod
+  def get_bad_rentals(cls):
+    from .sancion import Sancion
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+      rentals = session.query(cls).join(Sancion, cls.id == Sancion.id_alquiler).distinct().all()
+      return [rental.to_dict() for rental in rentals]
+    except Exception as e:
+      print(f"Error getting bad rentals: {e}")
+      return []
+    finally:
+      session.close()
 
   def persist(self):
     engine = DatabaseEngineSingleton().engine
