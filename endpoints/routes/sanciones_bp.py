@@ -83,3 +83,11 @@ def get_sanciones_by_alquiler(id_alquiler):
         return jsonify(sanciones), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@sanciones_bp.route("/nuevas", methods=["GET"])
+def get_sanciones_nuevas():
+    try:
+        sanciones = Sancion.get_sanciones_by_estado(7)
+        return jsonify(sanciones), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

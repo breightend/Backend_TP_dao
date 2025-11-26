@@ -42,12 +42,11 @@ class Daño(Base):
         return self.estado
 
     def getTipoDaño(self) -> TipoDaño:
-        return self.tipoDaño
+        return self.tipo_daño
 
-    def calcularCostoTotal(self):
-        # Note: This might fail if tipoDaño relationship is not loaded. 
-        # For calculation, we might need to fetch it or ensure it's loaded.
-        # Assuming it's accessed via relationship.
+    def calcularCostoTotal(self) -> float:
+        if self.tipo_daño is None:
+            return 0.0
         return int(self.tipo_daño.getCostoBase() * (1 + self.gravedad / 10))
 
     def actualizarEstado(self, nuevoEstado: Estado):

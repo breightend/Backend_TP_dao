@@ -36,6 +36,42 @@ class TipoDaño(Base):
     finally:
       session.close()
 
+  def update(self, nombre: str = None, costoBase: float = None):
+    if nombre is not None:
+      self.nombre = nombre
+    if costoBase is not None:
+      self.costoBase = costoBase
+    
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    try:
+      session.merge(self)
+      session.commit()
+    except Exception as e:
+      session.rollback()
+      raise e
+    finally:
+      session.close()
+
+  @classmethod
+  def delete_tipo_daño(cls, id: int):
+    engine = DatabaseEngineSingleton().engine
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    try:
+      tipo_daño = session.query(TipoDaño).filter(TipoDaño.id == id).first()
+      if tipo_daño:
+        session.delete(tipo_daño)
+        session.commit()
+        return True
+      return False
+    except Exception as e:
+      session.rollback()
+      raise e
+    finally:
+      session.close()
+
   def to_dict(self):
     return {
       "id_tipo_daño": self.id,

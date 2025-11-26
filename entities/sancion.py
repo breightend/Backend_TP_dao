@@ -106,6 +106,21 @@ class Sancion(Base):
             print(f"Error occurred while retrieving Estados de Sanciones: {e}")
             return []
 
+    @classmethod
+    def get_sanciones_by_estado(cls, id_estado: int):
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        try:
+            sanciones = session.query(Sancion).filter(Sancion.id_estado == id_estado).all()
+            sanciones = [s.to_dict() for s in sanciones]
+            return sanciones
+        except Exception as e:
+            print(f"Error occurred while retrieving Sanciones by estado: {e}")
+            return []
+        finally:
+            session.close()
+
 
 
     def to_dict(self):
