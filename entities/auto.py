@@ -43,7 +43,7 @@ class Auto(Base):
         self.patente = patente
         self.periodicidadMantenimineto = periodicidadMantenimineto
         self.imagen = imagen
-        self.id_estado = 1
+        self.id_estado = 2
         self.id_seguro = id_seguro
 
     def mostrar_informacion(self):
@@ -101,7 +101,7 @@ class Auto(Base):
                 print(
                     f"No se puede eliminar el auto {self.patente} porque tiene alquileres asociados."
                 )
-                return
+                raise ValueError("Auto tiene alquileres asociados")
 
             existing_maintenance = (
                 session.query(RegistroMantenimiento)
@@ -112,7 +112,7 @@ class Auto(Base):
                 print(
                     f"No se puede eliminar el auto {self.patente} porque tiene órdenes de mantenimiento asociadas."
                 )
-                return
+                raise ValueError("Auto tiene órdenes de mantenimiento asociadas")
 
             # Fetch the object within the current session to ensure it's attached
             auto_to_delete = session.query(Auto).filter_by(patente=self.patente).first()

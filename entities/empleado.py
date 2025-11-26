@@ -79,7 +79,7 @@ class Empleado(Persona):
                 print(
                     f"No se puede eliminar el empleado {self.legajo} porque tiene alquileres asociados."
                 )
-                return
+                raise ValueError("Empleado tiene alquileres asociados")
 
             # Fetch the object within the current session to ensure it's attached
             empleado_to_delete = session.query(Empleado).filter_by(legajo=self.legajo).first()
@@ -127,6 +127,19 @@ class Empleado(Persona):
                 return empleado
             except Exception as e:
                 print(f"Error occurred while retrieving empleado by DNI: {e}")
+                return None
+
+    @classmethod
+    def get_employee_by_legajo(cls, legajo):
+        engine = DatabaseEngineSingleton().engine
+        Session = sessionmaker(bind=engine)
+
+        with Session() as session:
+            try:
+                empleado = session.query(Empleado).filter_by(legajo=legajo).first()
+                return empleado
+            except Exception as e:
+                print(f"Error occurred while retrieving empleado by legajo: {e}")
                 return None
 
     def to_dict(self) -> dict:

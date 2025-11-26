@@ -62,7 +62,7 @@ class Cliente(Persona):
                 print(
                     f"No se puede eliminar el cliente {self.dni} porque tiene alquileres asociados."
                 )
-                return
+                raise ValueError("Cliente tiene alquileres asociados")
 
             # Fetch the object within the current session to ensure it's attached
             client_to_delete = session.query(Cliente).filter_by(dni=self.dni).first()
