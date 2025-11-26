@@ -1,3 +1,4 @@
+from sqlalchemy.orm.strategy_options import joinedload
 from sqlalchemy import Column, Integer, String, ForeignKey, text
 from sqlalchemy.orm import relationship, sessionmaker
 from db.base import Base
@@ -97,6 +98,25 @@ class RegistroMantenimiento(Base):
             session.rollback()
             print(f"Error al eliminar orden: {e}")
             raise e
+        finally:
+            session.close()
+    
+    @classmethod
+    def get_ordenes_of_vehicle(cls, patente_vehiculo: str):
+        engine = DatabaseEngineSingleton().engine
+        session_maker = sessionmaker(bind=engine)
+        session = session_maker()
+
+        try:
+            ordenes = session.query(cls).options(
+                joinedload(cls.mantenimientos)
+            ).filter(cls.patente_vehiculo == patente_vehiculo).all()
+            if ordenes:
+                return [orden.to_dict() for orden in ordenes]
+            return None
+        except Exception as e:
+            print(f"Error al obtener ordenes de vehículo {patente_vehiculo}: {e}")
+            return None
         finally:
             session.close()
 
