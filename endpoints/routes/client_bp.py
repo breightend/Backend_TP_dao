@@ -76,3 +76,17 @@ def editClient():
     cliente_existente.persist()
 
     return jsonify({"message": "Cliente actualizado exitosamente"}), 200
+
+
+@client_bp.route("/<int:dni>", methods=["DELETE"])
+def delete_client(dni):
+    try:
+        cliente = Cliente.get_client_by_dni(dni)
+        if not cliente:
+            return jsonify({"error": "Cliente no encontrado"}), 404
+
+        cliente.delete()
+
+        return jsonify({"message": "Cliente eliminado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al eliminar cliente: {str(e)}"}), 500

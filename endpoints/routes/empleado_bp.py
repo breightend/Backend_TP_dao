@@ -84,3 +84,17 @@ def update_user(dni):
     empleado.persist()
 
     return jsonify({"message": "Empleado actualizado exitosamente"}), 200
+
+
+@empleado_bp.route("/<int:legajo>", methods=["DELETE"])
+def delete_employee(legajo):
+    try:
+        empleado = Empleado.get_employee_by_legajo(legajo)
+        if not empleado:
+            return jsonify({"error": "Empleado no encontrado"}), 404
+
+        empleado.delete()
+
+        return jsonify({"message": "Empleado eliminado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al eliminar empleado: {str(e)}"}), 500
