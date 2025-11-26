@@ -88,5 +88,7 @@ def delete_client(dni):
         cliente.delete()
 
         return jsonify({"message": "Cliente eliminado exitosamente"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": f"Error al eliminar cliente: {str(e)}"}), 500

@@ -167,5 +167,7 @@ def delete_auto(patente):
         auto.delete()
 
         return jsonify({"message": "Auto eliminado exitosamente"})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": f"Error al eliminar auto: {str(e)}"}), 500

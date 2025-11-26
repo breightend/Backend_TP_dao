@@ -96,5 +96,7 @@ def delete_employee(legajo):
         empleado.delete()
 
         return jsonify({"message": "Empleado eliminado exitosamente"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": f"Error al eliminar empleado: {str(e)}"}), 500
