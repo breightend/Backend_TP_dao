@@ -62,17 +62,21 @@ class Cliente(Persona):
                 print(
                     f"No se puede eliminar el cliente {self.dni} porque tiene alquileres asociados."
                 )
-                session.rollback()
                 return
-            
 
-            session.delete(self)
+            # Fetch the object within the current session to ensure it's attached
+            client_to_delete = session.query(Cliente).filter_by(dni=self.dni).first()
+            if client_to_delete:
+                session.delete(client_to_delete)
+                session.commit()
+                print(f"Cliente {self.dni} eliminado exitosamente")
+            else:
+                print(f"Cliente {self.dni} no encontrado para eliminar")
 
-
-            session.commit()
         except Exception as e:
             session.rollback()
             print(f"Error occurred while deleting Cliente: {e}")
+            raise e
         finally:
             session.close()
 

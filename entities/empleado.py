@@ -62,6 +62,41 @@ class Empleado(Persona):
         finally:
             session.close()
 
+    def delete(self):
+        from entities.registroAlquilerAuto import RegistroAlquilerAuto
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            existing_rentals = (
+                session.query(RegistroAlquilerAuto)
+                .filter_by(legajo_empleado=self.legajo)
+                .first()
+            )
+            if existing_rentals:
+                print(
+                    f"No se puede eliminar el empleado {self.legajo} porque tiene alquileres asociados."
+                )
+                return
+
+            # Fetch the object within the current session to ensure it's attached
+            empleado_to_delete = session.query(Empleado).filter_by(legajo=self.legajo).first()
+            if empleado_to_delete:
+                session.delete(empleado_to_delete)
+                session.commit()
+                print(f"Empleado {self.legajo} eliminado exitosamente")
+            else:
+                print(f"Empleado {self.legajo} no encontrado para eliminar")
+
+        except Exception as e:
+            session.rollback()
+            print(f"Error occurred while deleting Empleado: {e}")
+            raise e
+        finally:
+            session.close()
+
     @staticmethod
     def get_all_employees():
         engine = DatabaseEngineSingleton().engine
