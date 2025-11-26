@@ -169,17 +169,3 @@ def delete_auto(patente):
         return jsonify({"message": "Auto eliminado exitosamente"})
     except Exception as e:
         return jsonify({"error": f"Error al eliminar auto: {str(e)}"}), 500
-
-
-@auto_bp.route("/autos/<string:patente>", methods=["DELETE"])
-def delete_auto_by_body(patente):
-    try:
-        auto = Auto.get_auto_by_patente(patente)
-        if not auto:
-            return jsonify({"error": f"No se encontró un auto con patente: {patente}"}), 404
-
-        auto.delete()
-
-        return jsonify({"message": "Auto eliminado exitosamente"}), 200
-    except Exception as e:
-        return jsonify({"error": f"Error al eliminar auto: {str(e)}"}), 500
