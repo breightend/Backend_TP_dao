@@ -64,7 +64,15 @@ class Sancion(Base):
         session.close()
         
         return daños
-
+    
+    def pagarSancion(self):
+        from .estado import Estado
+        estados = Estado.get_all_estados_de_ambito("Sanciones")
+        for estado in estados:
+            if estado["nombre"] == "Pagada":
+                self.id_estado = estado["id_estado"]
+                break
+        self.persist()
     
     @classmethod
     def get_all_sanciones_of_alquiler(cls, alquiler_id: int):

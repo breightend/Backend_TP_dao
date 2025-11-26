@@ -91,3 +91,12 @@ def get_sanciones_nuevas():
         return jsonify(sanciones), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@sanciones_bp.route("/pay/<int:id_sancion>", methods=["PUT"])
+def pay_sancion(id_sancion):
+    try:
+        sancion = Sancion.get_sancion_by_id(id_sancion)
+        sancion.pagarSancion()
+        return jsonify({"message": "Sancion paid successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
