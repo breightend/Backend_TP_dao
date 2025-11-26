@@ -67,13 +67,25 @@ def get_ordenes():
 def get_orden_by_id(id_orden):
     """Obtener una orden específica por ID"""
     try:
-        orden_dict = RegistroMantenimiento.get_orden_by_id(id_orden)
+        orden_dict = RegistroMantenimiento.get_orden_by_id(id_orden, False)
         if orden_dict:
             return jsonify(orden_dict), 200
         return jsonify({"error": "Orden no encontrada"}), 404
     except Exception as e:
         print(f"Error al obtener orden {id_orden}: {e}")
         return jsonify({"error": "Error al obtener la orden"}), 500
+
+@mantenimiento_bp.route("/ordenes/<string:patente_vehiculo>", methods=["GET"])
+def get_orden_of_vehicle(patente_vehiculo):
+    """Obtener todas las órdenes de mantenimiento de un vehículo"""
+    try:
+        orden_dict = RegistroMantenimiento.get_ordenes_of_vehicle(patente_vehiculo)
+        if orden_dict:
+            return jsonify(orden_dict), 200
+        return jsonify({"error": "Orden no encontrada"}), 404
+    except Exception as e:
+        print(f"Error al obtener ordenes de {patente_vehiculo}: {e}")
+        return jsonify({"error": "Error al obtener las órdenes de mantenimiento"}), 500
 
 
 @mantenimiento_bp.route("/ordenes", methods=["POST"])
@@ -213,7 +225,7 @@ def create_mantenimiento(id_orden):
     """Crear un nuevo mantenimiento para una orden específica"""
     try:
         # Verificar que la orden existe
-        orden = RegistroMantenimiento.get_orden_by_id(id_orden)
+        orden = RegistroMantenimiento.get_orden_by_id(id_orden, True)
         if not orden:
             return jsonify({"error": "Orden no encontrada"}), 404
         
