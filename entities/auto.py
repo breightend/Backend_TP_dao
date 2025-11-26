@@ -56,25 +56,7 @@ class Auto(Base):
         session = Session()
 
         try:
-            query = text("""
-                INSERT INTO Automoviles (patente, marca, modelo, año, color, precio, periocidad_mantenimiento, imagen, id_estado, id_seguro)
-                VALUES (:patente, :marca, :modelo, :anio, :color, :precio, :periodicidad, :imagen, :id_estado, :id_seguro)
-            """)
-
-            session.execute(
-                query,
-                {
-                    "patente": self.patente,
-                    "marca": self.marca,
-                    "modelo": self.modelo,
-                    "anio": self.anio,
-                    "color": self.color,
-                    "precio": self.costo,
-                    "periodicidad": self.periodicidadMantenimineto,
-                    "imagen": self.imagen,
-                },
-            )
-
+            session.add(self)
             session.commit()
             print(f"Auto {self.patente} persistido exitosamente")
         except Exception as e:
@@ -101,6 +83,58 @@ class Auto(Base):
         finally:
             session.close()
 
+    def delete(self):
+        from entities.registroAlquilerAuto import RegistroAlquilerAuto
+        from entities.registroMantenimiento import RegistroMantenimiento
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            existing_rentals = (
+                session.query(RegistroAlquilerAuto)
+                .filter_by(patente_vehiculo=self.patente)
+                .first()
+            )
+            if existing_rentals:
+                print(
+                    f"No se puede eliminar el auto {self.patente} porque tiene alquileres asociados."
+                )
+                return
+
+            existing_maintenance = (
+                session.query(RegistroMantenimiento)
+                .filter_by(patente_vehiculo=self.patente)
+                .first()
+            )
+            if existing_maintenance:
+                print(
+                    f"No se puede eliminar el auto {self.patente} porque tiene órdenes de mantenimiento asociadas."
+                )
+                return
+
+            # Fetch the object within the current session to ensure it's attached
+            auto_to_delete = session.query(Auto).filter_by(patente=self.patente).first()
+            if auto_to_delete:
+                session.delete(auto_to_delete)
+                session.commit()
+                print(f"Auto {self.patente} eliminado exitosamente")
+            else:
+                print(f"Auto {self.patente} no encontrado para eliminar")
+
+        except Exception as e:
+            session.rollback()
+            print(f"Error occurred while deleting Auto: {e}")
+            raise e
+        finally:
+            session.close()
+
+    @classmethod
+    def get_autos_states(cls):
+        from .estado import Estado
+        return Estado.get_all_estados_de_ambito("Automoviles")
+
     @classmethod
     def get_all_autos(cls):
         engine = DatabaseEngineSingleton().engine
@@ -109,12 +143,11 @@ class Auto(Base):
         session = Session()
 
         try:
-            query = text("SELECT * FROM Automoviles")
-            result = session.execute(query)
+            autos = session.query(cls).all()
 
             autos_data = []
-            for row in result:
-                imagen_bytes = getattr(row, "imagen", None)
+            for auto in autos:
+                imagen_bytes = auto.imagen
                 imagen_b64 = None
                 if imagen_bytes:
                     try:
@@ -123,22 +156,24 @@ class Auto(Base):
                         imagen_b64 = None
 
                 auto_dict = {
-                    "patente": row.patente,
-                    "marca": row.marca,
-                    "modelo": row.modelo,
-                    "anio": row.año,
-                    "color": row.color,
-                    "costo": row.precio,
-                    "periodicidadMantenimineto": row.periocidad_mantenimiento,
+                    "patente": auto.patente,
+                    "marca": auto.marca,
+                    "modelo": auto.modelo,
+                    "anio": auto.anio,
+                    "color": auto.color,
+                    "costo": auto.costo,
+                    "periodicidadMantenimineto": auto.periodicidadMantenimineto,
                     "imagen": imagen_b64,
+                    "estado": auto.estado.nombre,
                 }
                 autos_data.append(auto_dict)
-
             return autos_data
         except Exception as e:
             print(f"Error occurred while retrieving autos: {e}")
             return []
+        finally:
             session.close()
+            return autos_data
 
     def to_dict(self):
         return {
@@ -149,18 +184,24 @@ class Auto(Base):
             "color": self.color,
             "costo": self.costo,
             "periodicidadMantenimineto": self.periodicidadMantenimineto,
-            "estado": self.estado.to_dict(),
+            "estado": self.estado.to_dict(),    
             "seguro": self.seguro.to_dict(),
         }
 
     @classmethod
     def get_auto_by_patente(cls, patente: str):
+        from sqlalchemy.orm import joinedload
+        from entities.seguro import Seguro
+
         engine = DatabaseEngineSingleton().engine
         Session = sessionmaker(bind=engine)
         session = Session()
 
         try:
-            auto = session.query(Auto).filter_by(patente=patente).first()
+            auto = session.query(cls).options(
+                joinedload(cls.estado),
+                joinedload(cls.seguro).joinedload(Seguro.tipoPoliza)
+            ).filter_by(patente=patente).first()
             return auto
         except Exception as e:
             print(f"Error occurred while retrieving Auto: {e}")
@@ -199,160 +240,117 @@ class Auto(Base):
         - Historial de alquileres
         - Historial de mantenimientos
         """
+        from entities.registroAlquilerAuto import RegistroAlquilerAuto
+        from entities.registroMantenimiento import RegistroMantenimiento
+        from entities.sancion import Sancion
+        from entities.seguro import Seguro
+        from sqlalchemy.orm import joinedload
+
         engine = DatabaseEngineSingleton().engine
         Session = sessionmaker(bind=engine)
         session = Session()
 
         try:
-            # Consulta principal para obtener información del auto con estado y seguro
-            main_query = text("""
-                SELECT 
-                    a.patente, a.marca, a.modelo, a.año, a.color, a.precio, 
-                    a.periocidad_mantenimiento, a.imagen,
-                    e.nombre as estado_nombre, e.ambito as estado_ambito,
-                    s.descripcion as seguro_descripcion, s.costo as seguro_costo,
-                    ts.descripcion as tipo_seguro_descripcion
-                FROM Automoviles a
-                LEFT JOIN Estados e ON a.id_estado = e.id_estado
-                LEFT JOIN Seguros s ON a.id_seguro = s.id_seguro
-                LEFT JOIN Tipo_de_seguro ts ON s.id_tipo_seguro = ts.id_tipo_seguro
-                WHERE a.patente = :patente
-            """)
+            # 1. Obtener auto con estado y seguro
+            auto = session.query(cls).options(
+                joinedload(cls.estado),
+                joinedload(cls.seguro).joinedload(Seguro.tipoPoliza)
+            ).filter_by(patente=patente).first()
 
-            result = session.execute(main_query, {"patente": patente}).fetchone()
-
-            if not result:
+            if not auto:
                 return None
 
-            # Convertir imagen a base64 si existe
+            # Convertir imagen a base64
             imagen_b64 = None
-            if result.imagen:
+            if auto.imagen:
                 try:
-                    imagen_b64 = base64.b64encode(result.imagen).decode("utf-8")
+                    imagen_b64 = base64.b64encode(auto.imagen).decode("utf-8")
                 except Exception:
                     imagen_b64 = None
 
-            # Obtener historial de alquileres
-            alquileres_query = text("""
-                SELECT 
-                    al.id_alquiler, al.precio, al.fecha_inicio, al.fecha_fin,
-                    c.dni as cliente_dni, c.nombre as cliente_nombre, 
-                    c.apellido as cliente_apellido, c.email as cliente_email,
-                    e.legajo as empleado_legajo, e.nombre as empleado_nombre,
-                    e.apellido as empleado_apellido
-                FROM Alquileres_de_auto al
-                LEFT JOIN Clientes c ON al.dni_cliente = c.dni
-                LEFT JOIN Empleados e ON al.legajo_empleado = e.legajo
-                WHERE al.patente_vehiculo = :patente
-                ORDER BY al.fecha_inicio DESC
-            """)
+            # 2. Obtener historial de alquileres
+            alquileres = session.query(RegistroAlquilerAuto).options(
+                joinedload(RegistroAlquilerAuto.cliente),
+                joinedload(RegistroAlquilerAuto.empleado)
+            ).filter_by(patente_vehiculo=patente).order_by(RegistroAlquilerAuto.fechaInicio.desc()).all()
 
-            alquileres_result = session.execute(
-                alquileres_query, {"patente": patente}
-            ).fetchall()
-
-            # Obtener sanciones para cada alquiler
             alquileres_data = []
-            for alquiler in alquileres_result:
-                sanciones_query = text("""
-                    SELECT 
-                        s.id_sancion, s.precio, s.descripcion,
-                        ts.descripcion as tipo_descripcion
-                    FROM Sanciones s
-                    LEFT JOIN Tipo_Sancion ts ON s.id_tipo_sancion = ts.id_sancion
-                    WHERE s.id_alquiler = :id_alquiler
-                """)
-
-                sanciones_result = session.execute(
-                    sanciones_query, {"id_alquiler": alquiler.id_alquiler}
-                ).fetchall()
+            for alq in alquileres:
+                # Obtener sanciones para cada alquiler
+                sanciones = session.query(Sancion).options(
+                    joinedload(Sancion.tipo_sancion)
+                ).filter_by(id_alquiler=alq.id).all()
 
                 sanciones_data = [
                     {
-                        "id_sancion": sancion.id_sancion,
-                        "precio": sancion.precio,
-                        "descripcion": sancion.descripcion,
-                        "tipo_descripcion": sancion.tipo_descripcion,
+                        "id_sancion": s.id,
+                        "precio": s.costo_base,
+                        "descripcion": s.descripcion,
+                        "tipo_descripcion": s.tipo_sancion.descripcion if s.tipo_sancion else None,
                     }
-                    for sancion in sanciones_result
+                    for s in sanciones
                 ]
 
-                alquiler_data = {
-                    "id_alquiler": alquiler.id_alquiler,
-                    "precio": alquiler.precio,
-                    "fecha_inicio": alquiler.fecha_inicio,
-                    "fecha_fin": alquiler.fecha_fin,
+                alquileres_data.append({
+                    "id_alquiler": alq.id,
+                    "precio": alq.precio,
+                    "fecha_inicio": alq.fechaInicio,
+                    "fecha_fin": alq.fechaFin,
                     "cliente": {
-                        "dni": alquiler.cliente_dni,
-                        "nombre": alquiler.cliente_nombre,
-                        "apellido": alquiler.cliente_apellido,
-                        "email": alquiler.cliente_email,
-                    },
+                        "dni": alq.cliente.dni,
+                        "nombre": alq.cliente.nombre,
+                        "apellido": alq.cliente.apellido,
+                        "email": alq.cliente.email,
+                    } if alq.cliente else None,
                     "empleado": {
-                        "legajo": alquiler.empleado_legajo,
-                        "nombre": alquiler.empleado_nombre,
-                        "apellido": alquiler.empleado_apellido,
-                    },
+                        "legajo": alq.empleado.legajo,
+                        "nombre": alq.empleado.nombre,
+                        "apellido": alq.empleado.apellido,
+                    } if alq.empleado else None,
                     "sanciones": sanciones_data,
-                }
-                alquileres_data.append(alquiler_data)
+                })
 
-            # Obtener historial de mantenimientos
-            mantenimientos_query = text("""
-                SELECT 
-                    om.id_orden, om.fecha_inicio, om.fecha_fin,
-                    m.id_mantenimiento, m.precio, m.descripcion
-                FROM Ordenes_de_mantenimiento om
-                LEFT JOIN Mantenimientos m ON om.id_orden = m.id_orden_mantenimiento
-                WHERE om.patente_vehiculo = :patente
-                ORDER BY om.fecha_inicio DESC
-            """)
+            # 3. Obtener historial de mantenimientos
+            ordenes = session.query(RegistroMantenimiento).options(
+                joinedload(RegistroMantenimiento.mantenimientos)
+            ).filter_by(patente_vehiculo=patente).order_by(RegistroMantenimiento.fecha_inicio.desc()).all()
 
-            mantenimientos_result = session.execute(
-                mantenimientos_query, {"patente": patente}
-            ).fetchall()
-
-            # Agrupar mantenimientos por orden
-            ordenes_mantenimiento = {}
-            for row in mantenimientos_result:
-                orden_id = row.id_orden
-                if orden_id not in ordenes_mantenimiento:
-                    ordenes_mantenimiento[orden_id] = {
-                        "id_orden": orden_id,
-                        "fecha_inicio": row.fecha_inicio,
-                        "fecha_fin": row.fecha_fin,
-                        "mantenimientos": [],
+            mantenimientos_data = []
+            for orden in ordenes:
+                mants = [
+                    {
+                        "id_mantenimiento": m.id_mantenimiento,
+                        "precio": m.precio,
+                        "descripcion": m.descripcion,
                     }
-
-                if row.id_mantenimiento:  # Si hay mantenimiento asociado
-                    ordenes_mantenimiento[orden_id]["mantenimientos"].append(
-                        {
-                            "id_mantenimiento": row.id_mantenimiento,
-                            "precio": row.precio,
-                            "descripcion": row.descripcion,
-                        }
-                    )
-
-            mantenimientos_data = list(ordenes_mantenimiento.values())
+                    for m in orden.mantenimientos
+                ]
+                
+                mantenimientos_data.append({
+                    "id_orden": orden.id_orden,
+                    "fecha_inicio": orden.fecha_inicio,
+                    "fecha_fin": orden.fecha_fin,
+                    "mantenimientos": mants,
+                })
 
             # Construir respuesta completa
             auto_completo = {
-                "patente": result.patente,
-                "marca": result.marca,
-                "modelo": result.modelo,
-                "anio": result.año,
-                "color": result.color,
-                "costo": result.precio,
-                "periodicidadMantenimineto": result.periocidad_mantenimiento,
+                "patente": auto.patente,
+                "marca": auto.marca,
+                "modelo": auto.modelo,
+                "anio": auto.anio,
+                "color": auto.color,
+                "costo": auto.costo,
+                "periodicidadMantenimineto": auto.periodicidadMantenimineto,
                 "imagen": imagen_b64,
                 "estado": {
-                    "nombre": result.estado_nombre,
-                    "ambito": result.estado_ambito,
+                    "nombre": auto.estado.nombre if auto.estado else None,
+                    "ambito": auto.estado.ambito if auto.estado else None,
                 },
                 "seguro": {
-                    "descripcion": result.seguro_descripcion,
-                    "costo": result.seguro_costo,
-                    "tipo_descripcion": result.tipo_seguro_descripcion,
+                    "descripcion": auto.seguro.descripcion if auto.seguro else None,
+                    "costo": auto.seguro.costo if auto.seguro else None,
+                    "tipo_descripcion": auto.seguro.tipoPoliza.descripcion if auto.seguro and auto.seguro.tipoPoliza else None,
                 },
                 "historial_alquileres": alquileres_data,
                 "historial_mantenimientos": mantenimientos_data,
