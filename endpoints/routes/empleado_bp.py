@@ -28,6 +28,9 @@ def create_users():
     salario = datos_json.get("salario")
     fechaInicioActividad = datos_json.get("fechaInicioActividad")
 
+    if Empleado.get_employee_by_dni(dni):
+        return jsonify({"message": "Existe un empleado registrado con ese dni"}), 400
+
     nuevo_empleado = Empleado(
         nombre=nombre,
         apellido=apellido,
@@ -47,9 +50,9 @@ def create_users():
     return jsonify({"message": "Empleado creado exitosamente"}), 201
 
 
-@empleado_bp.route("/<dni>", methods=["GET"])
-def get_user(dni):
-    empleado = Empleado.get_employee_by_dni(dni)
+@empleado_bp.route("/<legajo>", methods=["GET"])
+def get_user(legajo):
+    empleado = Empleado.get_employee_by_legajo(legajo)
     if not empleado:
         return jsonify({"message": "Empleado no encontrado"}), 404
 

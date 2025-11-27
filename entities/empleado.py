@@ -16,7 +16,7 @@ class Empleado(Persona):
     puesto = Column("puesto", String(200), nullable=False)
     salario = Column("salario", Float, nullable=False)
     fechaInicioActividad = Column("fecha_inicio_actividad", String(100), nullable=False)
-    dni = Column("dni", Integer)
+    dni = Column("dni", Integer, unique=True)
 
     def __init__(
         self,
