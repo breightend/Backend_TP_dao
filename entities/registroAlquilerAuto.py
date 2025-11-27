@@ -225,5 +225,6 @@ class RegistroAlquilerAuto(Base):
       "precio": self.precio,
       "cliente": self.cliente.to_dict() if self.cliente else None,
       "empleado": self.empleado.to_dict() if self.empleado else None,
-      "sanciones": self.obtenerSancionesDict()
+      "sanciones": self.obtenerSancionesDict(),
+      "estado": self.estado.to_dict() if self.estado else None
     }
