@@ -21,7 +21,19 @@ def get_autos_available():
 
         autos_data = [auto.to_dict() for auto in autos_data]
 
-        print(autos_data)
+        return jsonify(autos_data), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al obtener autos: {str(e)}"}), 500
+
+@auto_bp.route("/autos/availableForRental", methods=["GET"])
+def get_autos_available_for_rental():
+    try:
+        fecha_inicio = request.args.get("fechaInicio")
+        fecha_fin = request.args.get("fechaFin")
+
+        autos_data = Auto.get_autos_available_for_rental(fecha_inicio, fecha_fin)
+
+        autos_data = [auto.to_dict() for auto in autos_data]
 
         return jsonify(autos_data), 200
     except Exception as e:

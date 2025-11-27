@@ -231,6 +231,36 @@ class Auto(Base):
             session.close()
 
     @classmethod
+    def get_autos_available_for_rental(cls, fecha_inicio: str = None, fecha_fin: str = None):
+        from sqlalchemy.orm import joinedload
+        from entities.seguro import Seguro
+        from entities.registroAlquilerAuto import RegistroAlquilerAuto
+        engine = DatabaseEngineSingleton().engine
+
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            autos = session.query(cls).options(
+                joinedload(cls.estado), 
+                joinedload(cls.seguro).joinedload(Seguro.tipoPoliza)
+            ).filter_by(id_estado=2).all()
+
+            if fecha_inicio and fecha_fin:
+                autos_disponibles = []
+                for auto in autos:
+                    if RegistroAlquilerAuto.car_available(auto.patente, fecha_inicio, fecha_fin):
+                        autos_disponibles.append(auto)
+                return autos_disponibles
+            
+            return autos
+        except Exception as e:
+            print(f"Error occurred while retrieving autos: {e}")
+            return []
+        finally:
+            session.close()
+
+    @classmethod
     def get_auto_by_patente_with_details(cls, patente: str):
         """
         Obtiene toda la información de un auto específico incluyendo:
