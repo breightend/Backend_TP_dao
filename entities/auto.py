@@ -186,6 +186,7 @@ class Auto(Base):
             "periodicidadMantenimineto": self.periodicidadMantenimineto,
             "estado": self.estado.to_dict(),    
             "seguro": self.seguro.to_dict(),
+            "imagen": self.imagen,
         }
 
     @classmethod
