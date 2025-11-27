@@ -176,6 +176,15 @@ class Auto(Base):
             return autos_data
 
     def to_dict(self):
+
+        imagen_bytes = self.imagen
+        imagen_b64 = None
+        if imagen_bytes:
+            try:
+                imagen_b64 = base64.b64encode(imagen_bytes).decode("utf-8")
+            except Exception:
+                imagen_b64 = None
+
         return {
             "patente": self.patente,
             "marca": self.marca,
@@ -186,7 +195,7 @@ class Auto(Base):
             "periodicidadMantenimineto": self.periodicidadMantenimineto,
             "estado": self.estado.to_dict(),    
             "seguro": self.seguro.to_dict(),
-            "imagen": self.imagen,
+            "imagen": imagen_b64,
         }
 
     @classmethod
