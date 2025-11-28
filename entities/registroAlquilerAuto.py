@@ -8,7 +8,7 @@ from .cliente import Cliente
 from .empleado import Empleado
 from .auto import Auto
 from .estado import Estado
-from datetime import datetime
+from datetime import datetime, date
 
 class RegistroAlquilerAuto(Base):
   __tablename__ = "Alquileres_de_auto"
@@ -182,6 +182,22 @@ class RegistroAlquilerAuto(Base):
 
     try:
       rentals = session.query(cls).filter(cls.id_estado != 9).all()
+      
+      # Actualizar alquileres reservados a en curso si la fecha de inicio es hoy o anterior
+      today = date.today()
+      fmt = "%Y-%m-%d"
+      updated = False
+      
+      for rental in rentals:
+        if rental.id_estado == 11:  # Estado reservado
+          fecha_inicio = datetime.strptime(rental.fechaInicio.strip(), fmt).date()
+          if fecha_inicio <= today:
+            rental.id_estado = 10  # Cambiar a estado en curso
+            updated = True
+      
+      if updated:
+        session.commit()
+      
       return [rental.to_dict() for rental in rentals]
     except Exception as e:
       session.rollback()
